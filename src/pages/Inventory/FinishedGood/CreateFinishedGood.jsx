@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const CreateFinishedGoods = () => {
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ const CreateFinishedGoods = () => {
 
   return (
     <div className="form-wrapper bg-white p-4 rounded shadow mt-4" style={{ maxWidth: "1000px", margin: "0 auto" }}>
-      <a href="/finishedGoods" className="btn btn-secondary mb-3">← Back to Finished Goods</a>
+      <Link to="/finishedGoods" className="btn btn-secondary mb-3">← Back to Finished Goods</Link>
       <h2 className="text-center text-primary mb-4">Add New Finished Good</h2>
 
       <form onSubmit={handleSubmit}>

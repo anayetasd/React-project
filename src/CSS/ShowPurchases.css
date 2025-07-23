@@ -1,0 +1,79 @@
+.invoice-container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 30px;
+  background: #fff;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 26px;
+}
+
+.invoice-info,
+.supplier-info {
+  width: 100%;
+  margin-bottom: 20px;
+  border-collapse: collapse;
+}
+
+.invoice-info td,
+.supplier-info td {
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.product-table th,
+.product-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+
+.summary {
+  margin-top: 20px;
+  font-size: 16px;
+  text-align: right;
+}
+
+.btn-back {
+  background-color: #555;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.btn-print {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-print:hover {
+  background-color: #0056b3;
+}
+
+.btn-right {
+  text-align: right;
+  margin-top: 20px;
+}

@@ -20,7 +20,7 @@ const ManageRawMaterial = () => {
       <div className="table-container bg-white p-4 rounded shadow">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 style={{ fontSize: "26px", color: "#333" }}>Raw Materials List</h2>
-          <Link to="/raw-materials/create" className="btn btn-primary">+ New Product</Link>
+          <Link to="/rawmaterials/create" className="btn btn-primary">+ New Raw Materials</Link>
         </div>
 
         <div className="table-responsive">
@@ -44,9 +44,9 @@ const ManageRawMaterial = () => {
                     <td>{raw.price_per_unit}</td>
                     <td>
                       <div className="d-flex flex-wrap gap-2">
-                        <Link to={`/raw-materials/${raw.id}`} className="btn btn-sm btn-success">View</Link>
-                        <Link to={`/raw-materials/${raw.id}/edit`} className="btn btn-sm btn-info">Edit</Link>
-                        <Link to={`/raw-materials/${raw.id}/confirm`} className="btn btn-sm btn-warning">Delete</Link>
+                        <Link to={`/rawmaterials/${raw.id}`} className="btn btn-sm btn-success">View</Link>
+                        <Link to={`/rawmaterials/${raw.id}/edit`} className="btn btn-sm btn-info">Edit</Link>
+                        <Link to={`/rawmaterials/${raw.id}/confirm`} className="btn btn-sm btn-warning">Delete</Link>
                       </div>
                     </td>
                   </tr>

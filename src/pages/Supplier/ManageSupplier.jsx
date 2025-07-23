@@ -58,17 +58,15 @@ const ManageSupplier = () => {
                   <td>
                     <div className="btn-group">
                       <Link to={`/suppliers/${supplier.id}/edit`} className="btn btn-sm btn-primary">
-                        ✏️ Edit
+                         Edit
                       </Link>
                       <Link to={`/suppliers/${supplier.id}`} className="btn btn-sm btn-success">
-                        🔍 View
+                         View
                       </Link>
                       <Link to={`/suppliers/${supplier.id}/confirm`} className="btn btn-sm btn-danger">
-                        🗑️ Delete
+                         Delete
                       </Link>
-                      <Link to={`/suppliers/${supplier.id}/history`} className="btn btn-sm btn-info">
-                        History
-                      </Link>
+                     
                     </div>
                   </td>
                 </tr>

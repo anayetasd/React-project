@@ -1,57 +1,48 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
-const DeleteRawMaterial = () => {
+const DeleteEmployee = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
-  const [rawMaterial, setRawMaterial] = useState(null);
+
+  const [employee, setEmployee] = useState(null);
 
   useEffect(() => {
-    fetch(`${baseUrl}/rawmaterials/${id}`)
+    fetch(`${baseUrl}/employees/${id}`)
       .then((res) => res.json())
-      .then((data) => setRawMaterial(data))
-      .catch((err) => console.error("Failed to load raw material", err));
+      .then((data) => setEmployee(data))
+      .catch((err) => console.error("Error fetching employee:", err));
   }, [id]);
 
   const handleDelete = async (e) => {
     e.preventDefault();
+
     const confirmed = window.confirm("Are you sure you want to delete?");
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`${baseUrl}/rawMaterials/${id}`, {
+      const response = await fetch(`${baseUrl}/employees/${id}`, {
         method: "DELETE",
+        headers: {
+          Accept: "application/json",
+        },
       });
 
       if (response.ok) {
-        navigate("/rawmaterials");
+        alert("Employee deleted successfully.");
+        navigate("/employees");
       } else {
-        alert("Failed to delete.");
+        alert("Failed to delete employee.");
       }
     } catch (error) {
-      console.error("Error deleting raw material", error);
+      console.error("Delete failed:", error);
+      alert("Error occurred during deletion.");
     }
   };
 
-  if (!rawMaterial) return <p>Loading...</p>;
-
   return (
     <div className="confirm-container">
-      <h2>Confirm Deletion</h2>
-      <p>
-        Are you sure you want to delete Raw Material ID:{" "}
-        <strong>{rawMaterial.id}</strong>?
-      </p>
-
-      <form onSubmit={handleDelete}>
-        <input className="btn-confirm" type="submit" value="Yes, Delete It" />
-      </form>
-
-      <Link className="btn-back" to="/rawMaterials">
-        ← Back
-      </Link>
-
       <style>{`
         .confirm-container {
           max-width: 500px;
@@ -105,8 +96,30 @@ const DeleteRawMaterial = () => {
           background-color: #218838;
         }
       `}</style>
+
+      <h2>Confirm Deletion</h2>
+      {employee ? (
+        <>
+          <p>
+            Are you sure you want to delete Employee ID:{" "}
+            <strong>{employee.id}</strong>?
+          </p>
+          <h4>Employee Name: {employee.name}</h4>
+          <h4>Address: {employee.address}</h4>
+
+          <form onSubmit={handleDelete}>
+            <input className="btn-confirm" type="submit" value="Yes, Delete It" />
+          </form>
+
+          <Link className="btn-back" to="/employees">
+            ← Back
+          </Link>
+        </>
+      ) : (
+        <p>Loading employee details...</p>
+      )}
     </div>
   );
 };
 
-export default DeleteRawMaterial;
+export default DeleteEmployee;

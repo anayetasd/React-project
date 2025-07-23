@@ -49,24 +49,9 @@ const ManageFinishedGood = () => {
                     <td>{item.finished_good_status}</td>
                     <td>
                       <div className="btn-group">
-                        <Link
-                          to={`/finishedGoods/${item.id}/edit`}
-                          className="btn btn-sm btn-primary"
-                        >
-                          Edit
-                        </Link>
-                        <Link
-                          to={`/finishedGoods/${item.id}`}
-                          className="btn btn-sm btn-success"
-                        >
-                          View
-                        </Link>
-                        <Link
-                          to={`/finishedGoods/${item.id}/confirm`}
-                          className="btn btn-sm btn-danger"
-                        >
-                          Delete
-                        </Link>
+                        <Link to={`/finishedGoods/${item.id}/edit`}  className="btn btn-sm btn-primary"> Edit </Link>
+                        <Link to={`/finishedGoods/${item.id}`} className="btn btn-sm btn-success" > View</Link>
+                        <Link  to={`/finishedGoods/${item.id}/confirm`} className="btn btn-sm btn-danger" >   Delete</Link>
                       </div>
                     </td>
                   </tr>

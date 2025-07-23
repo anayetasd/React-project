@@ -51,24 +51,9 @@ const ManageStock = () => {
                   <td>{stock.warehouse?.name ?? "no name"}</td>
                   <td>
                     <div className="btn-group">
-                      <Link
-                        to={`/stocks/${stock.id}/edit`}
-                        className="btn btn-sm btn-primary"
-                      >
-                        ✏️ Edit
-                      </Link>
-                      <Link
-                        to={`/stocks/${stock.id}`}
-                        className="btn btn-sm btn-success"
-                      >
-                        🔍 View
-                      </Link>
-                      <Link
-                        to={`/stocks/${stock.id}/confirm`}
-                        className="btn btn-sm btn-danger"
-                      >
-                        🗑️ Delete
-                      </Link>
+                      <Link to={`/stocks/${stock.id}/edit`} className="btn btn-sm btn-primary" > Edit </Link>
+                      <Link to={`/stocks/${stock.id}`} className="btn btn-sm btn-success" >  View </Link>
+                      <Link to={`/stocks/${stock.id}/confirm`} className="btn btn-sm btn-danger"> Delete</Link>
                     </div>
                   </td>
                 </tr>

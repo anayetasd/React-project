@@ -51,24 +51,9 @@ const ManageProduction = () => {
                   <td>{production.quantity_produced}</td>
                   <td>
                     <div className="btn-group">
-                      <Link
-                        to={`/productions/${production.id}/edit`}
-                        className="btn btn-sm btn-primary"
-                      >
-                        ✏️ Edit
-                      </Link>
-                      <Link
-                        to={`/productions/${production.id}`}
-                        className="btn btn-sm btn-success"
-                      >
-                        🔍 View
-                      </Link>
-                      <Link
-                        to={`/productions/${production.id}/confirm`}
-                        className="btn btn-sm btn-warning"
-                      >
-                        🗑️ Delete
-                      </Link>
+                      <Link to={`/productions/${production.id}/edit`}className="btn btn-sm btn-primary" >Edit </Link>
+                      <Link to={`/productions/${production.id}`} className="btn btn-sm btn-success" >View</Link>
+                      <Link to={`/productions/${production.id}/confirm`} className="btn btn-sm btn-warning" >Delete </Link>
                     </div>
                   </td>
                 </tr>

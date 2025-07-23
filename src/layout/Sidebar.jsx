@@ -32,13 +32,12 @@ const Sidebar = () => {
               </NavLink>
               {/* more inner pages*/}
             </li>
-            <li className="nav-item">
+            {/* <li className="nav-item">
               <NavLink className="nav-link active" to="/dashboard">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Dashboard</span>
                 </div>
               </NavLink>
-              {/* more inner pages*/}
-            </li>            
+            </li> */}
           </ul>
         </li>
 
@@ -51,12 +50,12 @@ const Sidebar = () => {
           </a>
           <ul className="nav collapse" id="Purchases">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/create-purchases">
+            <li className="nav-item"><NavLink className="nav-link active" to="/purchases/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Purchases</span>
                 </div>
               </NavLink>
             </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/manage-purchases">
+            <li className="nav-item"><NavLink className="nav-link" to="/purchases">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Manage Purchases</span>
                 </div>
               </NavLink>
@@ -75,13 +74,13 @@ const Sidebar = () => {
           </a>
           <ul className="nav collapse" id="Supplier">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/create-supplier">
+            <li className="nav-item"><NavLink className="nav-link active" to="/suppliers/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Supplier</span>
                 </div>
               </NavLink>
               {/* more inner pages*/}
             </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/manage-supplier">
+            <li className="nav-item"><NavLink className="nav-link" to="/suppliers">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Manage Supplier</span>
                 </div>
               </NavLink>
@@ -99,13 +98,13 @@ const Sidebar = () => {
           </a>
           <ul className="nav collapse" id="Stock">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/create-stock">
+            <li className="nav-item"><NavLink className="nav-link active" to="/stocks/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Stock</span>
                 </div>
               </NavLink>
               {/* more inner pages*/}
             </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/manage-stock">
+            <li className="nav-item"><NavLink className="nav-link" to="/stocks">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Manage Stock</span>
                 </div>
               </NavLink>
@@ -124,26 +123,26 @@ const Sidebar = () => {
           </a>
           <ul className="nav collapse" id="Production">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/create-production">
+            <li className="nav-item"><NavLink className="nav-link active" to="/productions//create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create raw production</span>
                 </div>
               </NavLink>
               {/* more inner pages*/}
             </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/manage-production">
+            <li className="nav-item"><NavLink className="nav-link" to="/productions">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Manage Production</span>
                 </div>
               </NavLink>
               {/* more inner pages*/}
             </li>
 
-            <li className="nav-item"><NavLink className="nav-link" to="/create-product">
+            <li className="nav-item"><NavLink className="nav-link" to="/products/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Product</span>
                 </div>
               </NavLink>
               {/* more inner pages*/}
             </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/manage-product">
+            <li className="nav-item"><NavLink className="nav-link" to="/products">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Manage Product</span>
                 </div>
               </NavLink>
@@ -161,30 +160,29 @@ const Sidebar = () => {
           </a>
           <ul className="nav collapse" id="inventory">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/create-rawmaterials">
+            <li className="nav-item"><NavLink className="nav-link active" to="/rawmaterials/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1"> Create Raw Materials</span>
                 </div>
               </NavLink>
             </li>
 
-            <li className="nav-item"><NavLink className="nav-link active" to="/manage-rawmaterials">
+            <li className="nav-item"><NavLink className="nav-link active" to="/rawmaterials">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Manage Raw Materials</span>
                 </div>
               </NavLink>
             </li>
 
-            <li className="nav-item"><NavLink className="nav-link" to="/create-finishedgoods">
+            <li className="nav-item"><NavLink className="nav-link" to="/finishedgoods/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1"> Create Finished goods</span>
                 </div>
               </NavLink>
             </li>
 
-            <li className="nav-item"><NavLink className="nav-link" to="/manage-finishedgoods">
+            <li className="nav-item"><NavLink className="nav-link" to="/finishedgoods">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1"> Manage Finished goods</span>
                 </div>
               </NavLink>
             </li>
-
 
           </ul>
         </li>
@@ -198,13 +196,13 @@ const Sidebar = () => {
           </a>
           <ul className="nav collapse" id="Order">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/Create-Order">
+            <li className="nav-item"><NavLink className="nav-link active" to="/orders/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Order</span>
                 </div>
               </NavLink>
               {/* more inner pages*/}
             </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/Manage-Order">
+            <li className="nav-item"><NavLink className="nav-link" to="/orders">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Manage Order</span>
                 </div>
               </NavLink>
@@ -224,13 +222,13 @@ const Sidebar = () => {
           </a>
           <ul className="nav collapse" id="Customer">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/create-customers">
+            <li className="nav-item"><NavLink className="nav-link active" to="/customers/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Customer</span>
                 </div>
               </NavLink>
               {/* more inner pages*/}
             </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/manage-customers">
+            <li className="nav-item"><NavLink className="nav-link" to="/customers">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Management Customer</span>
                 </div>
               </NavLink>
@@ -283,38 +281,22 @@ const Sidebar = () => {
         
         <li className="nav-item">
           <a className="nav-link dropdown-indicator" href="#Finance" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="dashboard">
-            <div className="d-flex align-items-center"><span className="nav-link-icon"><span className="fas fa-book" /></span><span className="nav-link-text ps-1">Report Management</span>
+            <div className="d-flex align-items-center"><span className="nav-link-icon"><span className="fas fa-book" /></span><span className="nav-link-text ps-1">Sales Management</span>
             </div>
           </a>
           <ul className="nav collapse" id="Finance">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/">
-                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Accounts Payable</span>
+            <li className="nav-item"><NavLink className="nav-link active" to="/sales/create">
+                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Sales</span>
                 </div>
               </NavLink>
-              {/* more inner pages*/}
             </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/">
-                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Accounts receivable</span>
+            
+            <li className="nav-item"><NavLink className="nav-link" to="/sales">
+                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Sales List</span>
                 </div>
               </NavLink>
-              {/* more inner pages*/}
             </li>
-
-            <li className="nav-item"><NavLink className="nav-link" to="/">
-                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">General ledger</span>
-                </div>
-              </NavLink>
-              {/* more inner pages*/}
-            </li>
-
-            <li className="nav-item"><NavLink className="nav-link" to="/">
-                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Financial Reports</span>
-                </div>
-              </NavLink>
-              {/* more inner pages*/}
-            </li>
-
 
           </ul>
 
@@ -329,25 +311,30 @@ const Sidebar = () => {
             </div>
           </a>
           <ul className="nav collapse" id="Human">          
-           
-            <li className="nav-item"><NavLink className="nav-link active" to="/">
-                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Employee Management</span>
+              
+            <li className="nav-item"><NavLink className="nav-link active" to="/employees/create">
+                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Employee t</span>
                 </div>
               </NavLink>
-              {/* more inner pages*/}
-            </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/">
-                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Attendance $ Timekeeping</span>
-                </div>
-              </NavLink>
-              {/* more inner pages*/}
             </li>
 
-            <li className="nav-item"><NavLink className="nav-link" to="/">
-                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Employee Training</span>
+
+            <li className="nav-item"><NavLink className="nav-link active" to="/employees">
+                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Employee List</span>
                 </div>
               </NavLink>
-              {/* more inner pages*/}
+            </li>
+
+            <li className="nav-item"><NavLink className="nav-link" to="/employeesalarys/create">
+                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Payment</span>
+                </div>
+              </NavLink>
+            </li>
+
+            <li className="nav-item"><NavLink className="nav-link" to="/employeesalarys">
+                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Payment List</span>
+                </div>
+              </NavLink>
             </li>
 
           </ul>
