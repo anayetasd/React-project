@@ -42,7 +42,7 @@ import ManageProduct from './pages/Product/ManageProduct'
 import CreateProduct from './pages/Product/CreateProduct'
 import EditProduct from './pages/Product/EditProduct'
 import ShowProduct from './pages/Product/ShowProduct'
-import DeleteProduct from './pages/Product/EditProduct'
+import DeleteProduct from './pages/Product/DeleteProduct'
 
 
 
