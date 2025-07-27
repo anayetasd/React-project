@@ -9,162 +9,174 @@ const EditProduction = () => {
   const [form, setForm] = useState({
     production_date: "",
     product_id: "",
-    qty: "",
-    note: "",
+    raw_material_id: "",
+    raw_material_qty: "",
+    unit: "",
+    quantity_produced: ""
   });
 
   const [products, setProducts] = useState([]);
-  const [unit, setUnit] = useState("");
-  const [totalProduced, setTotalProduced] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [rawmaterials, setRawmaterials] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // Load product list
-    fetch(`${baseUrl}/products`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setProducts(data);
-        } else if (Array.isArray(data.products)) {
-          setProducts(data.products);
-        } else {
-          console.error("Invalid product response:", data);
-        }
-      })
-      .catch((error) => {
-        console.error("Product fetch failed:", error);
-      });
-
-    // Load production by ID
-    fetch(`${baseUrl}/productions/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data) {
-          setForm({
-            production_date: data.production_date || "",
-            product_id: data.product_id || "",
-            qty: data.qty || "",
-            note: data.note || "",
-          });
-          setUnit(data.unit || "");
-          setTotalProduced(data.total_produced || "");
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Production load error:", error);
-        setLoading(false);
-      });
+    fetchData();
   }, [id]);
+
+  const fetchData = async () => {
+    try {
+      const prodRes = await fetch(`${baseUrl}/productions/${id}`);
+      const prodData = await prodRes.json();
+
+      const productRes = await fetch(`${baseUrl}/products`);
+      const productData = await productRes.json();
+
+      const rawRes = await fetch(`${baseUrl}/rawmaterials`);
+      const rawData = await rawRes.json();
+
+      console.log("Production Data:", prodData);
+
+      if (prodData?.production) {
+        setForm({
+          production_date: prodData.production.production_date || "",
+          product_id: prodData.production.product_id || "",
+          raw_material_id: prodData.production.raw_material_id || "",
+          raw_material_qty: prodData.production.raw_material_qty?.toString() || "", // <-- toString() added
+          unit: prodData.production.unit || "",
+          quantity_produced: prodData.production.quantity_produced?.toString() || ""
+        });
+      }
+
+      setProducts(productData?.products || []);
+      setRawmaterials(rawData?.rawmaterials || []);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Failed to load data.");
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    fetch(`${baseUrl}/productions/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        alert("Production updated successfully!");
-        navigate("/productions");
-      })
-      .catch((err) => {
-        console.error("Update failed:", err);
-        alert("Something went wrong while updating.");
+    try {
+      const response = await fetch(`${baseUrl}/productions/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(form)
       });
+
+      if (response.ok) {
+        navigate("/productions");
+      } else {
+        const errData = await response.json();
+        setError(errData.message || "Failed to update.");
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      setError("Error submitting form.");
+    }
   };
 
-  if (loading) return <p>Loading...</p>;
-
   return (
-    <div className="container mt-4">
-      <h2>Edit Production</h2>
+    <div className="container mt-5">
+      <h2 className="mb-4">Edit Production</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label>Production Date</label>
+          <label className="form-label">Production Date</label>
           <input
             type="date"
-            className="form-control"
             name="production_date"
             value={form.production_date}
             onChange={handleChange}
+            className="form-control"
             required
           />
         </div>
 
         <div className="mb-3">
-          <label>Product</label>
+          <label className="form-label">Product</label>
           <select
-            className="form-control"
             name="product_id"
             value={form.product_id}
             onChange={handleChange}
+            className="form-control"
             required
           >
-            <option value="">-- Select Product --</option>
+            <option value="">Select Product</option>
             {products.map((product) => (
               <option key={product.id} value={product.id}>
-                {product.name}
+                {product.name || "Unnamed"}
               </option>
             ))}
           </select>
         </div>
 
         <div className="mb-3">
-          <label>Quantity</label>
+          <label className="form-label">Raw Material</label>
+          <select
+            name="raw_material_id"
+            value={form.raw_material_id}
+            onChange={handleChange}
+            className="form-control"
+            required
+          >
+            <option value="">Select Raw Material</option>
+            {rawmaterials.map((raw) => (
+              <option key={raw.id} value={raw.id}>
+                {raw.name || "Unnamed"}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Raw Material Quantity</label>
           <input
             type="number"
-            className="form-control"
-            name="qty"
-            value={form.qty}
+            name="raw_material_qty"
+            value={form.raw_material_qty}
             onChange={handleChange}
+            className="form-control"
             required
           />
         </div>
 
-        {/* Read-only Unit field */}
         <div className="mb-3">
-          <label>Unit</label>
+          <label className="form-label">Unit</label>
           <input
             type="text"
-            className="form-control"
-            value={unit}
-            readOnly
-          />
-        </div>
-
-        {/* Read-only Total Produced field */}
-        <div className="mb-3">
-          <label>Total Produced</label>
-          <input
-            type="text"
-            className="form-control"
-            value={totalProduced}
-            readOnly
-          />
-        </div>
-
-        <div className="mb-3">
-          <label>Note</label>
-          <textarea
-            className="form-control"
-            name="note"
-            value={form.note}
+            name="unit"
+            value={form.unit}
             onChange={handleChange}
+            className="form-control"
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Quantity Produced</label>
+          <input
+            type="number"
+            name="quantity_produced"
+            value={form.quantity_produced}
+            onChange={handleChange}
+            className="form-control"
+            required
           />
         </div>
 
         <button type="submit" className="btn btn-primary">
           Update Production
         </button>
-        <Link to="/productions" className="btn btn-secondary ms-2">Cancel</Link>
+        <Link to="/productions" className="btn btn-secondary ms-2">
+          Cancel
+        </Link>
       </form>
     </div>
   );

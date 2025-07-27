@@ -4,8 +4,8 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 const EditEmployee = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
 
+  const [employee, setEmployee] = useState(null);
   const [form, setForm] = useState({
     name: "",
     joining_date: "",
@@ -13,203 +13,193 @@ const EditEmployee = () => {
     photo: null,
   });
 
-  const [existingPhoto, setExistingPhoto] = useState(null);
-
   useEffect(() => {
-    fetch(`${baseUrl}/employees/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchEmployee = async () => {
+      try {
+        const res = await fetch(`http://anayet.intelsofts.com/project_app/public/api/employees/${id}`);
+        if (!res.ok) throw new Error("Failed to fetch employee");
+        const data = await res.json();
+        const emp = data.employee ?? data;
+        setEmployee(emp);
         setForm({
-          name: data.name || "",
-          joining_date: data.joining_date || "",
-          address: data.address || "",
+          name: emp.name ?? "",
+          joining_date: emp.joining_date ?? "",
+          address: emp.address ?? "",
           photo: null,
         });
-        setExistingPhoto(data.photo || null);
-      })
-      .catch((err) => console.error("Error fetching employee:", err));
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load employee data.");
+      }
+    };
+    fetchEmployee();
   }, [id]);
 
   const handleChange = (e) => {
-    const { name, value, files, type } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "file" ? files[0] : value,
-    }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleFileChange = (e) => {
+    setForm({ ...form, photo: e.target.files[0] });
+  };
+
+  const updateEmployee = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-
-    formData.append("name", form.name);
-    formData.append("joining_date", form.joining_date);
-    formData.append("address", form.address);
-    if (form.photo) {
-      formData.append("photo", form.photo);
-    }
-
     try {
-      const res = await fetch(`${baseUrl}/employees/${id}`, {
-        method: "POST", // Laravel expects POST + _method=PUT
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("joining_date", form.joining_date);
+      formData.append("address", form.address);
+      if (form.photo) formData.append("photo", form.photo);
+
+      const res = await fetch(`http://anayet.intelsofts.com/project_app/public/api/employees/${id}`, {
+        method: "POST",
+        headers: {
+          "X-HTTP-Method-Override": "PUT",
+        },
         body: formData,
       });
-      formData.append("_method", "PUT");
 
-      if (res.ok) {
-        alert("Employee updated successfully!");
-        navigate("/employees");
-      } else {
-        alert("Failed to update employee.");
-      }
+      if (!res.ok) throw new Error("Failed to update");
+
+      alert("Employee updated successfully");
+      navigate("/employees");
     } catch (err) {
-      console.error("Update error:", err);
-      alert("An error occurred.");
+      console.error(err);
+      alert("Error updating employee.");
     }
   };
 
   return (
     <>
-      <style>{`
-        .form-container {
-          max-width: 1200px;
-          margin: 40px auto;
-          background: #ffffff;
-          padding: 30px 40px;
-          border-radius: 12px;
-          box-shadow: 0 0 15px rgba(0,0,0,0.08);
-          font-family: 'Segoe UI', sans-serif;
-        }
+      <Link to="/employees" style={styles.btnBack}>
+        ← Back
+      </Link>
 
-        .form-container h2 {
-          text-align: center;
-          margin-bottom: 25px;
-          color: #005792;
-        }
+      {employee && (
+        <div style={styles.formContainer}>
+          <h2 style={styles.heading}>Edit Employee</h2>
+          <form onSubmit={updateEmployee}>
+            <div style={styles.formGroup}>
+              <label htmlFor="name">Name</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                value={form.name}
+                onChange={handleChange}
+                style={styles.input}
+              />
+            </div>
 
-        .form-group {
-          margin-bottom: 20px;
-        }
+            <div style={styles.formGroup}>
+              <label htmlFor="joining_date">Joining Date</label>
+              <input
+                id="joining_date"
+                name="joining_date"
+                type="date"
+                required
+                value={form.joining_date}
+                onChange={handleChange}
+                style={styles.input}
+              />
+            </div>
 
-        label {
-          font-weight: 600;
-          display: block;
-          margin-bottom: 8px;
-          color: #333;
-        }
+            <div style={styles.formGroup}>
+              <label htmlFor="photo">Photo</label>
+              <input
+                id="photo"
+                name="photo"
+                type="file"
+                onChange={handleFileChange}
+                style={styles.input}
+              />
+              {employee.photo && (
+                <div style={styles.photoPreview}>
+                  <img
+                    src={`http://anayet.intelsofts.com/project_app/public/uploads/employees/${employee.photo}`}
+                    alt="Current"
+                    style={styles.photoImage}
+                  />
+                </div>
+              )}
+            </div>
 
-        input[type="text"],
-        input[type="date"],
-        input[type="file"],
-        textarea {
-          width: 100%;
-          padding: 10px 12px;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          font-size: 15px;
-        }
+            <div style={styles.formGroup}>
+              <label htmlFor="address">Address</label>
+              <textarea
+                id="address"
+                name="address"
+                required
+                value={form.address}
+                onChange={handleChange}
+                style={{ ...styles.input, height: 100 }}
+              />
+            </div>
 
-        textarea {
-          resize: vertical;
-          min-height: 100px;
-        }
-
-        .btn-submit {
-          background-color: #005792;
-          color: white;
-          padding: 12px 20px;
-          border: none;
-          border-radius: 8px;
-          font-size: 16px;
-          cursor: pointer;
-          transition: 0.3s;
-        }
-
-        .btn-submit:hover {
-          background-color: #003f66;
-        }
-
-        .btn-back {
-          display: inline-block;
-          margin: 20px auto 10px 40px;
-          text-decoration: none;
-          background-color: #28a745;
-          color: white;
-          padding: 10px 16px;
-          border-radius: 8px;
-          font-size: 15px;
-        }
-
-        .btn-back:hover {
-          background-color: #218838;
-        }
-
-        .photo-preview {
-          margin-top: 10px;
-        }
-
-        .photo-preview img {
-          height: 60px;
-          border-radius: 6px;
-        }
-      `}</style>
-
-      <Link className="btn-back" to="/employees">← Back</Link>
-
-      <div className="form-container">
-        <h2>Edit Employee</h2>
-
-        <form onSubmit={handleSubmit} encType="multipart/form-data">
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="joining_date">Joining Date</label>
-            <input
-              type="date"
-              name="joining_date"
-              id="joining_date"
-              value={form.joining_date}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="photo">Photo</label>
-            <input type="file" name="photo" id="photo" onChange={handleChange} />
-            {existingPhoto && (
-              <div className="photo-preview">
-                <img src={`http://anayet.intelsofts.com/project_app/public/uploads/employees/${existingPhoto}`} alt="Current" />
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="address">Address</label>
-            <textarea
-              name="address"
-              id="address"
-              value={form.address}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <button type="submit" className="btn-submit">💾 Save Employee</button>
-        </form>
-      </div>
+            <button type="submit" style={styles.btnSubmit}>
+              💾 Save Employee
+            </button>
+          </form>
+        </div>
+      )}
     </>
   );
+};
+
+const styles = {
+  formContainer: {
+    maxWidth: 1200,
+    margin: "40px auto",
+    backgroundColor: "#ffffff",
+    padding: "30px 40px",
+    borderRadius: 12,
+    boxShadow: "0 0 15px rgba(0,0,0,0.08)",
+    fontFamily: "'Segoe UI', sans-serif",
+  },
+  heading: {
+    textAlign: "center",
+    marginBottom: 25,
+    color: "#005792",
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  input: {
+    width: "100%",
+    padding: "10px 12px",
+    border: "1px solid #ccc",
+    borderRadius: 8,
+    fontSize: 15,
+  },
+  btnSubmit: {
+    backgroundColor: "#005792",
+    color: "white",
+    padding: "12px 20px",
+    border: "none",
+    borderRadius: 8,
+    fontSize: 16,
+    cursor: "pointer",
+    transition: "0.3s",
+  },
+  btnBack: {
+    display: "inline-block",
+    margin: "20px auto 10px 40px",
+    textDecoration: "none",
+    backgroundColor: "#28a745",
+    color: "white",
+    padding: "10px 16px",
+    borderRadius: 8,
+    fontSize: 15,
+  },
+  photoPreview: {
+    marginTop: 10,
+  },
+  photoImage: {
+    height: 60,
+    borderRadius: 6,
+  },
 };
 
 export default EditEmployee;

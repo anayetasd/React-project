@@ -1,110 +1,105 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
-const CreatePurchases = () => {
+const CreatePurchase = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [products, setProducts] = useState([]);
-  const [purchaseId, setPurchaseId] = useState(1);
   const [cart, setCart] = useState([]);
-
-  // Form state
+  const [subtotal, setSubtotal] = useState(0);
+  const [netTotal, setNetTotal] = useState(0);
   const [form, setForm] = useState({
-    supplier_id: "",
-    warehouse_id: "",
-    purchase_date: new Date().toISOString().slice(0, 10),
-    delivery_date: new Date().toISOString().slice(0, 10),
-    shipping_address: "",
-    remark: "",
+    supplier_id: '',
+    warehouse_id: '',
+    purchase_date: new Date().toISOString().substr(0, 10),
+    delivery_date: new Date().toISOString().substr(0, 10),
+    shipping_address: '',
+    remark: '',
+    purchase_total: 0,
+    paid_amount: 0,
+    discount: 0,
+    vat: 0
+  });
+  const [selected, setSelected] = useState({
+    product_id: '',
+    price: '',
+    qty: '',
+    discount: ''
   });
 
-  // Inputs for adding product to cart
-  const [selectedProductId, setSelectedProductId] = useState("");
-  const [price, setPrice] = useState("");
-  const [qty, setQty] = useState("");
-  const [discount, setDiscount] = useState("");
+  const baseUrl = 'http://anayet.intelsofts.com/project_app/public/api/';
 
-  // Fetch initial data for dropdowns and purchase ID
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost/laravel12/project_app/public/api/purchases/init");
-        const data = await res.json();
-
-        setSuppliers(data.suppliers || []);
-        setWarehouses(data.warehouses || []);
-        setProducts(data.products || []);
-        setPurchaseId(data.next_purchase_id || 1);
+        const [sRes, wRes, pRes] = await Promise.all([
+          fetch(`${baseUrl}suppliers`),
+          fetch(`${baseUrl}warehouses`),
+          fetch(`${baseUrl}products`)
+        ]);
+        const suppliersJson = await sRes.json();
+        const warehousesJson = await wRes.json();
+        const productsJson = await pRes.json();
+        setSuppliers(suppliersJson.suppliers || []);
+        setWarehouses(warehousesJson.warehouses || []);
+        setProducts(productsJson.products || []);
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error('Error loading data:', err);
       }
     };
-
     fetchData();
   }, []);
 
-  // Handle form input changes
-  const handleChange = (e) => {
+  const handleSelectedChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setSelected(prev => ({ ...prev, [name]: value }));
   };
 
-  // Add product to cart
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
   const addToCart = () => {
-    if (!selectedProductId) {
-      alert("Please select a product");
-      return;
-    }
-    if (qty <= 0 || price <= 0) {
-      alert("Please enter valid quantity and price");
-      return;
-    }
+    const { product_id, price, qty, discount } = selected;
+    if (!product_id || price <= 0 || qty <= 0) return alert('Product info missing');
 
-    const product = products.find((p) => p.id === parseInt(selectedProductId));
-    if (!product) {
-      alert("Invalid product selected");
-      return;
-    }
+    const name = products.find(p => p.id == product_id)?.name || 'Unknown';
 
-    setCart((prev) => [
-      ...prev,
-      {
-        product_id: selectedProductId,
-        name: product.name,
-        price: parseFloat(price),
-        qty: parseInt(qty),
-        discount: parseFloat(discount) || 0,
-      },
-    ]);
-
-    // Reset inputs
-    setSelectedProductId("");
-    setPrice("");
-    setQty("");
-    setDiscount("");
+    const newCart = [...cart, {
+      product_id,
+      name,
+      price: parseFloat(price),
+      qty: parseInt(qty),
+      discount: parseFloat(discount || 0)
+    }];
+    setCart(newCart);
+    setSelected({ product_id: '', price: '', qty: '', discount: '' });
+    refreshTotals(newCart);
   };
 
-  // Remove product from cart by index
-  const removeFromCart = (index) => {
-    setCart((prev) => prev.filter((_, i) => i !== index));
+  const refreshTotals = (cartItems) => {
+    let sub = 0;
+    cartItems.forEach(i => {
+      sub += (i.price * i.qty) - i.discount;
+    });
+    setSubtotal(sub);
+    setNetTotal(sub);
   };
 
-  // Clear cart
+  const removeRow = (index) => {
+    const newCart = cart.filter((_, i) => i !== index);
+    setCart(newCart);
+    refreshTotals(newCart);
+  };
+
   const clearCart = () => {
     setCart([]);
+    refreshTotals([]);
   };
 
-  // Calculate totals
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const totalDiscount = cart.reduce((acc, item) => acc + item.discount, 0);
-  const netTotal = subtotal - totalDiscount;
-
-  // Submit purchase order
   const processPurchase = async () => {
-    if (cart.length === 0) {
-      alert("Cart is empty");
+    if (!form.supplier_id || !form.warehouse_id || cart.length === 0) {
+      alert('Fill all required fields');
       return;
     }
 
@@ -112,120 +107,74 @@ const CreatePurchases = () => {
       ...form,
       purchase_total: netTotal,
       paid_amount: netTotal,
-      discount: totalDiscount,
-      vat: 0,
-      items: cart.map(({ product_id, qty, price, discount }) => ({
-        product_id,
-        qty,
-        price,
-        discount,
-        vat: 0,
-      })),
+      items: cart.map(i => ({
+        product_id: i.product_id,
+        qty: i.qty,
+        price: i.price,
+        discount: i.discount,
+        vat: 0
+      }))
     };
 
     try {
-      const res = await fetch("http://anayet.intelsofts.com/project_app/public/api/purchases", {
-        method: "POST",
+      const res = await fetch(`${baseUrl}purchases`, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
-      const resultText = await res.text();
-      let resultJson;
-      try {
-        resultJson = JSON.parse(resultText);
-      } catch {
-        alert("Invalid JSON response from API");
-        return;
-      }
+      const json = await res.json();
 
-      if (resultJson.msg === "Success") {
-        alert(`Purchase ID ${resultJson.id} saved successfully!`);
-        setCart([]);
-        setForm({
-          supplier_id: "",
-          warehouse_id: "",
-          purchase_date: new Date().toISOString().slice(0, 10),
-          delivery_date: new Date().toISOString().slice(0, 10),
-          shipping_address: "",
-          remark: "",
-        });
+      if (json.msg === 'Success') {
+        alert('Purchase saved with ID: ' + json.id);
+        clearCart();
       } else {
-        alert("API Error: " + (resultJson.error || JSON.stringify(resultJson)));
+        alert('Save failed: ' + JSON.stringify(json));
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to connect to API");
+      alert('API error');
     }
   };
 
   return (
-    <div className="container p-4">
-      <h2>Create Purchase</h2>
+    <div className="container mt-4">
+      <h2 className="text-center mb-4">Create Purchase</h2>
 
       <div className="row mb-3">
         <div className="col-md-4">
           <label>Warehouse</label>
-          <select name="warehouse_id" value={form.warehouse_id} onChange={handleChange} className="form-control">
-            <option value="">-- Select Warehouse --</option>
-            {warehouses.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
+          <select name="warehouse_id" className="form-control" value={form.warehouse_id} onChange={handleFormChange}>
+            <option value="">Select</option>
+            {warehouses.map(w => (
+              <option key={w.id} value={w.id}>{w.name}</option>
             ))}
           </select>
         </div>
-
         <div className="col-md-4">
           <label>Supplier</label>
-          <select name="supplier_id" value={form.supplier_id} onChange={handleChange} className="form-control">
-            <option value="">-- Select Supplier --</option>
-            {suppliers.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
+          <select name="supplier_id" className="form-control" value={form.supplier_id} onChange={handleFormChange}>
+            <option value="">Select</option>
+            {suppliers.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
-
           <label className="mt-2">Shipping Address</label>
-          <textarea
-            name="shipping_address"
-            value={form.shipping_address}
-            onChange={handleChange}
-            className="form-control"
-          />
+          <textarea name="shipping_address" className="form-control" value={form.shipping_address} onChange={handleFormChange}></textarea>
         </div>
-
         <div className="col-md-4">
-          <p>
-            <strong>Purchase ID:</strong> {purchaseId}
-          </p>
-
           <label>Purchase Date</label>
-          <input
-            type="date"
-            name="purchase_date"
-            value={form.purchase_date}
-            onChange={handleChange}
-            className="form-control"
-          />
-
-          <label>Delivery Date</label>
-          <input
-            type="date"
-            name="delivery_date"
-            value={form.delivery_date}
-            onChange={handleChange}
-            className="form-control"
-          />
+          <input type="date" name="purchase_date" className="form-control" value={form.purchase_date} onChange={handleFormChange} />
+          <label className="mt-2">Delivery Date</label>
+          <input type="date" name="delivery_date" className="form-control" value={form.delivery_date} onChange={handleFormChange} />
         </div>
       </div>
 
-      <table className="table table-bordered">
-        <thead>
+      <table className="table table-bordered mb-3">
+        <thead className="table-info">
           <tr>
             <th>SN</th>
             <th>Product</th>
@@ -233,122 +182,63 @@ const CreatePurchases = () => {
             <th>Qty</th>
             <th>Discount</th>
             <th>Subtotal</th>
-            <th>
-              <button className="btn btn-warning btn-sm" onClick={clearCart}>
-                Clear
-              </button>
-            </th>
+            <th><button className="btn btn-sm btn-danger" onClick={clearCart}>Clear</button></th>
           </tr>
           <tr>
-            <td></td>
+            <td>#</td>
             <td>
-              <select
-                value={selectedProductId}
-                onChange={(e) => setSelectedProductId(e.target.value)}
-                className="form-control"
-              >
-                <option value="">-- Select Product --</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
+              <select name="product_id" className="form-control" value={selected.product_id} onChange={handleSelectedChange}>
+                <option value="">Choose</option>
+                {products.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
             </td>
-            <td>
-              <input
-                type="number"
-                step="0.01"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="form-control"
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                value={qty}
-                onChange={(e) => setQty(e.target.value)}
-                className="form-control"
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.01"
-                value={discount}
-                onChange={(e) => setDiscount(e.target.value)}
-                className="form-control"
-              />
-            </td>
+            <td><input name="price" type="number" className="form-control" value={selected.price} onChange={handleSelectedChange} /></td>
+            <td><input name="qty" type="number" className="form-control" value={selected.qty} onChange={handleSelectedChange} /></td>
+            <td><input name="discount" type="number" className="form-control" value={selected.discount} onChange={handleSelectedChange} /></td>
             <td></td>
-            <td>
-              <button className="btn btn-success btn-sm" onClick={addToCart}>
-                +
-              </button>
-            </td>
+            <td><button className="btn btn-sm btn-success" onClick={addToCart}>+</button></td>
           </tr>
         </thead>
         <tbody>
-          {cart.length > 0 ? (
-            cart.map((item, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>{item.name}</td>
-                <td>{item.price.toFixed(2)}</td>
-                <td>{item.qty}</td>
-                <td>{item.discount.toFixed(2)}</td>
-                <td>{(item.price * item.qty - item.discount).toFixed(2)}</td>
-                <td>
-                  <button className="btn btn-danger btn-sm" onClick={() => removeFromCart(index)}>
-                    X
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7" className="text-center">
-                No items added
-              </td>
+          {cart.map((item, index) => (
+            <tr key={index}>
+              <td>{index + 1}</td>
+              <td>{item.name}</td>
+              <td>{item.price}</td>
+              <td>{item.qty}</td>
+              <td>{item.discount}</td>
+              <td>{(item.qty * item.price) - item.discount}</td>
+              <td><button className="btn btn-sm btn-danger" onClick={() => removeRow(index)}>X</button></td>
             </tr>
+          ))}
+          {cart.length === 0 && (
+            <tr><td colSpan="7" className="text-center">No items in cart.</td></tr>
           )}
         </tbody>
       </table>
 
-      <div className="row mt-3">
+      <div className="row">
         <div className="col-md-6">
           <label>Remark</label>
-          <textarea name="remark" value={form.remark} onChange={handleChange} className="form-control" />
+          <textarea name="remark" className="form-control" value={form.remark} onChange={handleFormChange}></textarea>
         </div>
-
         <div className="col-md-6">
           <table className="table">
             <tbody>
-              <tr>
-                <th>Subtotal</th>
-                <td>{subtotal.toFixed(2)}</td>
-              </tr>
-              <tr>
-                <th>Discount</th>
-                <td>{totalDiscount.toFixed(2)}</td>
-              </tr>
-              <tr>
-                <th>Total</th>
-                <td>{netTotal.toFixed(2)}</td>
-              </tr>
+              <tr><th>Subtotal</th><td>{subtotal}</td></tr>
+              <tr><th>Total</th><td>{netTotal}</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
       <div className="text-end">
-        <button className="btn btn-primary" onClick={processPurchase}>
-          Process Purchase
-        </button>
+        <button className="btn btn-primary" onClick={processPurchase}>Process Purchase</button>
       </div>
     </div>
   );
 };
 
-export default CreatePurchases;
+export default CreatePurchase;

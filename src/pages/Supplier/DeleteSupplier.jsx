@@ -1,103 +1,117 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 
 const DeleteSupplier = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
-  const [supplier, setSupplier] = useState(null);
+  const [supplier, setSupplier] = useState({});
 
-  useEffect(() => {
-    fetch(`${baseUrl}/suppliers/${id}`)
-      .then((res) => res.json())
-      .then((data) => setSupplier(data))
-      .catch((err) => console.error("Fetch error:", err));
-  }, [id]);
+  const baseUrl = `http://anayet.intelsofts.com/project_app/public/api/suppliers/${id}`;
 
-  const handleDelete = (e) => {
-    e.preventDefault();
-
-    fetch(`${baseUrl}/suppliers/${id}`, {
-      method: "POST",
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        "X-HTTP-Method-Override": "DELETE",
-      },
-    })
-      .then((res) => res.json())
-      .then(() => {
-        alert("Supplier deleted successfully!");
-        navigate("/suppliers");
-      })
-      .catch((err) => {
-        console.error("Delete error:", err);
-        alert("Failed to delete supplier.");
-      });
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure?")) {
+      try {
+        const response = await fetch(baseUrl, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        });
+        if (response.ok) {
+          alert("✅ Supplier deleted successfully!");
+          navigate('/suppliers');
+        } else {
+          alert("❌ Delete failed!");
+        }
+      } catch (error) {
+        console.error('Fetch Error:', error);
+        alert("❌ Delete failed due to error!");
+      }
+    }
   };
 
-  if (!supplier) return <div className="text-center mt-5">Loading...</div>;
+  useEffect(() => {
+    const fetchSupplier = async () => {
+      try {
+        const response = await fetch(baseUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        });
+        const data = await response.json();
+        setSupplier(data.supplier || {});
+      } catch (error) {
+        console.error('Fetch Error:', error);
+      }
+    };
+
+    fetchSupplier();
+  }, [baseUrl]);
 
   return (
     <div style={styles.container}>
-      <p style={styles.text}>Are you sure you want to delete this supplier?</p>
-      <h2 style={styles.name}>{supplier.name}</h2>
+      <h1 style={styles.title}>Delete Supplier</h1>
 
-      <form onSubmit={handleDelete}>
-        <div style={styles.btnGroup}>
-          <input
-            type="submit"
-            value="Yes, Delete"
-            style={{ ...styles.btn, ...styles.btnDanger }}
-          />
-          <Link to="/suppliers" style={{ ...styles.btn, ...styles.btnBack }}>
-            Cancel
-          </Link>
-        </div>
-      </form>
+      <Link to="/suppliers" style={styles.backLink}>← Back to List</Link>
+
+      <div style={styles.confirmBox}>
+        <h4 style={styles.confirmTitle}>Are you sure you want to delete this supplier?</h4>
+        <p><strong>ID:</strong> {supplier.id}</p>
+        <p><strong>Name:</strong> {supplier.name}</p>
+
+        <button onClick={handleDelete} style={styles.deleteBtn}>Delete</button>
+      </div>
     </div>
   );
 };
 
 const styles = {
   container: {
-    maxWidth: "600px",
-    margin: "50px auto",
-    padding: "30px",
-    backgroundColor: "#ffffff",
-    borderRadius: "12px",
-    boxShadow: "0 6px 20px rgba(0, 0, 0, 0.1)",
-    textAlign: "center",
+    maxWidth: '600px',
+    margin: '50px auto',
+    padding: '30px',
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
+    fontFamily: `'Segoe UI', sans-serif`,
+    textAlign: 'center',
   },
-  text: {
-    fontSize: "18px",
-    marginBottom: "20px",
-    color: "#6c757d",
+  title: {
+    fontSize: '28px',
+    marginBottom: '20px',
+    color: '#d32f2f',
   },
-  name: {
-    color: "#dc3545",
-    marginBottom: "30px",
+  backLink: {
+    display: 'inline-block',
+    marginBottom: '20px',
+    color: '#1976d2',
+    textDecoration: 'none',
+    fontWeight: 'bold',
   },
-  btnGroup: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "15px",
+  confirmBox: {
+    backgroundColor: '#fefefe',
+    border: '1px solid #e0e0e0',
+    padding: '20px',
+    borderRadius: '10px',
   },
-  btn: {
-    padding: "10px 25px",
-    fontSize: "16px",
-    textDecoration: "none",
-    borderRadius: "5px",
-    fontWeight: "bold",
-    border: "none",
-    cursor: "pointer",
+  confirmTitle: {
+    fontSize: '20px',
+    marginBottom: '15px',
+    color: '#333',
   },
-  btnDanger: {
-    backgroundColor: "#dc3545",
-    color: "#fff",
-  },
-  btnBack: {
-    backgroundColor: "#198754",
-    color: "#fff",
+  deleteBtn: {
+    backgroundColor: '#e53935',
+    color: 'white',
+    border: 'none',
+    padding: '10px 20px',
+    fontSize: '16px',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    marginTop: '15px',
+    transition: 'background-color 0.3s',
   },
 };
 

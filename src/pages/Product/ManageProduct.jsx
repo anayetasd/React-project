@@ -8,7 +8,7 @@ const ManageProduct = () => {
     fetch("http://anayet.intelsofts.com/project_app/public/api/products")
       .then((res) => res.json())
       .then((data) => {
-        setProducts(data.products); // update if your API returns directly as array
+        setProducts(data.products);
       })
       .catch((err) => {
         console.error("Error fetching product data:", err);
@@ -41,7 +41,7 @@ const ManageProduct = () => {
                   <td>{product.id}</td>
                   <td>
                     <img
-                      src={`/img/${product.photo}`}
+                      src={`http://anayet.intelsofts.com/project_app/public/uploads/products/${product.photo}`}
                       alt={product.name}
                       width="80"
                       height="80"
@@ -55,13 +55,13 @@ const ManageProduct = () => {
                   <td>
                     <div className="btn-group">
                       <Link to={`/products/${product.id}/edit`} className="btn btn-sm btn-primary">
-                        ✏️ Edit
+                        Edit
                       </Link>
                       <Link to={`/products/${product.id}`} className="btn btn-sm btn-success">
-                        🔍 View
+                        View
                       </Link>
                       <Link to={`/products/${product.id}/confirm`} className="btn btn-sm btn-danger">
-                        🗑️ Delete
+                        Delete
                       </Link>
                     </div>
                   </td>

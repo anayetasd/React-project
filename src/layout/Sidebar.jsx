@@ -10,7 +10,7 @@ const Sidebar = () => {
     <div className="toggle-icon-wrapper">
       <button className="btn navbar-toggler-humburger-icon navbar-vertical-toggle" data-bs-toggle="tooltip" data-bs-placement="left" title="Toggle Navigation"><span className="navbar-toggle-icon"><span className="toggle-line" /></span></button>
     </div><a className="navbar-brand" href="index.html">
-      <div className="d-flex align-items-center py-3"><img className="me-2" src="assets/img/icons/spot-illustrations/logo_4.png" alt width={32} /><span className="font-sans-serif"> Rice Mills</span>
+      <div className="d-flex align-items-center py-3"><img className="me-2" src="assets/img/download(5).jpeg" alt width={32} /><span className="font-sans-serif"> Rice Mills</span>
       </div>
     </a>
   </div>
@@ -32,12 +32,7 @@ const Sidebar = () => {
               </NavLink>
               {/* more inner pages*/}
             </li>
-            {/* <li className="nav-item">
-              <NavLink className="nav-link active" to="/dashboard">
-                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Dashboard</span>
-                </div>
-              </NavLink>
-            </li> */}
+          
           </ul>
         </li>
 
@@ -123,7 +118,7 @@ const Sidebar = () => {
           </a>
           <ul className="nav collapse" id="Production">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/productions//create">
+            <li className="nav-item"><NavLink className="nav-link active" to="/productions/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create raw production</span>
                 </div>
               </NavLink>
@@ -247,30 +242,30 @@ const Sidebar = () => {
           </a>
           <ul className="nav collapse" id="Accounts">          
            
-            <li className="nav-item"><NavLink className="nav-link active" to="/create-MR">
+            <li className="nav-item"><NavLink className="nav-link active" to="/mrs/create">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create MR</span>
                 </div>
               </NavLink>
               {/* more inner pages*/}
             </li>
-            <li className="nav-item"><NavLink className="nav-link" to="/manage-MR">
+            <li className="nav-item"><NavLink className="nav-link" to="/mrs">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Manage MR</span>
                 </div>
               </NavLink>
-              {/* more inner pages*/}
             </li>
-            <li className="nav-item"><NavLink className="nav-link active" to="/Create-invoice">
+
+
+            {/* <li className="nav-item"><NavLink className="nav-link active" to="/Create-invoice">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create invoice</span>
                 </div>
               </NavLink>
-              {/* more inner pages*/}
             </li>
+
             <li className="nav-item"><NavLink className="nav-link" to="/Manage-Invoice">
                 <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Manage Invoice</span>
                 </div>
               </NavLink>
-              {/* more inner pages*/}
-            </li>
+            </li> */}
        
           </ul>
         </li>
@@ -313,7 +308,7 @@ const Sidebar = () => {
           <ul className="nav collapse" id="Human">          
               
             <li className="nav-item"><NavLink className="nav-link active" to="/employees/create">
-                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Employee t</span>
+                <div className="d-flex align-items-center"><span className="nav-link-text ps-1">Create Employee </span>
                 </div>
               </NavLink>
             </li>

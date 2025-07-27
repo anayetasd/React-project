@@ -1,151 +1,114 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
-const ShowEmployee = () => {
+const EmployeeDetails = () => {
   const { id } = useParams();
   const [employee, setEmployee] = useState(null);
 
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
-
   useEffect(() => {
-    fetch(`${baseUrl}/employees/${id}`)
-      .then((res) => res.json())
-      .then((data) => setEmployee(data))
-      .catch((err) => console.error("Error fetching employee:", err));
+    const fetchEmployee = async () => {
+      try {
+        const res = await fetch(`http://anayet.intelsofts.com/project_app/public/api/employees/${id}`);
+        if (!res.ok) throw new Error("Failed to fetch employee");
+        const data = await res.json();
+        setEmployee(data.employee ?? data);
+      } catch (error) {
+        console.error("Failed to fetch employee:", error);
+      }
+    };
+    fetchEmployee();
   }, [id]);
 
-  if (!employee) {
-    return <p style={{ textAlign: "center", marginTop: "50px" }}>Loading...</p>;
-  }
-
   return (
-    <>
-      <style>{`
-        .detail-container {
-          max-width: 1150px;
-          margin: 40px auto;
-          background: #ffffff;
-          padding: 40px;
-          border-radius: 16px;
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-          font-family: 'Segoe UI', sans-serif;
-        }
+    <div style={styles.detailContainer}>
+      <Link to="/employees" style={styles.btnBack}>
+        ← Back
+      </Link>
 
-        .detail-container h2 {
-          text-align: center;
-          margin-bottom: 35px;
-          color: #005792;
-          font-size: 28px;
-          font-weight: bold;
-          letter-spacing: 1px;
-        }
+      <h2 style={styles.heading}>Employee Details</h2>
 
-        table.detail-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 16px;
-        }
-
-        table.detail-table tr {
-          border-bottom: 1px solid #e0e0e0;
-        }
-
-        table.detail-table td {
-          padding: 14px 16px;
-        }
-
-        table.detail-table td:first-child {
-          font-weight: 600;
-          color: #333;
-          width: 35%;
-          background-color: #f0f4f8;
-          border-right: 1px solid #e0e0e0;
-        }
-
-        table.detail-table td:last-child {
-          background-color: #fafafa;
-          color: #555;
-        }
-
-        .btn-back {
-          display: inline-block;
-          margin: 20px 0 0 40px;
-          text-decoration: none;
-          background-color: #28a745;
-          color: white;
-          padding: 10px 20px;
-          border-radius: 8px;
-          font-size: 15px;
-          transition: background-color 0.3s ease;
-        }
-
-        .btn-back:hover {
-          background-color: #218838;
-        }
-
-        @media (max-width: 768px) {
-          .detail-container {
-            padding: 25px 20px;
-          }
-
-          table.detail-table td {
-            display: block;
-            width: 100%;
-          }
-
-          table.detail-table tr {
-            display: block;
-            margin-bottom: 15px;
-          }
-
-          table.detail-table td:first-child {
-            background-color: transparent;
-            border-right: none;
-            font-weight: bold;
-            padding-bottom: 6px;
-          }
-
-          table.detail-table td:last-child {
-            background-color: #f9f9f9;
-          }
-        }
-      `}</style>
-
-      <Link className="btn-back" to="/employees">← Back</Link>
-
-      <div className="detail-container">
-        <h2>Employee Details</h2>
-        <table className="detail-table">
+      {employee && (
+        <table style={styles.detailTable}>
           <tbody>
             <tr>
-              <td>ID</td>
-              <td>{employee.id}</td>
+              <td style={styles.firstTd}>ID</td>
+              <td style={styles.lastTd}>{employee.id}</td>
             </tr>
             <tr>
-              <td>Name</td>
-              <td>{employee.name}</td>
+              <td style={styles.firstTd}>Name</td>
+              <td style={styles.lastTd}>{employee.name}</td>
             </tr>
             <tr>
-              <td>Shift</td>
-              <td>{employee.shift?.name || "N/A"}</td>
+              <td style={styles.firstTd}>Shift</td>
+              <td style={styles.lastTd}>{employee.shift?.name ?? "N/A"}</td>
             </tr>
             <tr>
-              <td>Category</td>
-              <td>{employee.categorie?.name || "N/A"}</td>
+              <td style={styles.firstTd}>Category</td>
+              <td style={styles.lastTd}>{employee.categorie?.name ?? "N/A"}</td>
             </tr>
             <tr>
-              <td>Joining Date</td>
-              <td>{employee.joining_date}</td>
+              <td style={styles.firstTd}>Joining Date</td>
+              <td style={styles.lastTd}>{employee.joining_date}</td>
             </tr>
             <tr>
-              <td>Address</td>
-              <td>{employee.address}</td>
+              <td style={styles.firstTd}>Address</td>
+              <td style={styles.lastTd}>{employee.address}</td>
             </tr>
           </tbody>
         </table>
-      </div>
-    </>
+      )}
+    </div>
   );
 };
 
-export default ShowEmployee;
+const styles = {
+  detailContainer: {
+    maxWidth: 1150,
+    margin: "40px auto",
+    backgroundColor: "#ffffff",
+    padding: 40,
+    borderRadius: 16,
+    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.08)",
+    fontFamily: "'Segoe UI', sans-serif",
+  },
+  heading: {
+    textAlign: "center",
+    marginBottom: 35,
+    color: "#005792",
+    fontSize: 28,
+    fontWeight: "bold",
+    letterSpacing: 1,
+  },
+  detailTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: 16,
+  },
+  firstTd: {
+    padding: "14px 16px",
+    fontWeight: 600,
+    color: "#333",
+    width: "35%",
+    backgroundColor: "#f0f4f8",
+    borderRight: "1px solid #e0e0e0",
+  },
+  lastTd: {
+    padding: "14px 16px",
+    backgroundColor: "#fafafa",
+    color: "#555",
+  },
+  btnBack: {
+    display: "inline-block",
+    margin: "20px 0 0 40px",
+    textDecoration: "none",
+    backgroundColor: "#28a745",
+    color: "white",
+    padding: "10px 20px",
+    borderRadius: 8,
+    fontSize: 15,
+    transition: "background-color 0.3s ease",
+  },
+};
+
+
+export default EmployeeDetails;

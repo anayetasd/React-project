@@ -1,88 +1,114 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
-const DeletePurchase = () => {
-  const { id } = useParams();
-  const [purchase, setPurchase] = useState(null);
+const ConfirmDeletePurchase = () => {
+  const { id: purchaseId } = useParams();
   const navigate = useNavigate();
 
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
+  const [purchase, setPurchase] = useState({});
+  const baseUrl = 'http://anayet.intelsofts.com/project_app/public/api/';
+  const endpoint = `purchases/${purchaseId}`;
 
+  // Fetch purchase data on component mount
   useEffect(() => {
-    fetch(`${baseUrl}/purchases/${id}`)
-      .then(res => res.json())
-      .then(data => setPurchase(data))
-      .catch(err => console.error("Error fetching purchase:", err));
-  }, [id]);
-
-  const handleDelete = (e) => {
-    e.preventDefault();
-    fetch(`${baseUrl}/purchases/${id}`, {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json"
+    const fetchPurchase = async () => {
+      try {
+        const response = await fetch(`${baseUrl}${endpoint}`, {
+          headers: { Accept: 'application/json' },
+        });
+        const data = await response.json();
+        setPurchase(data.purchase ?? data);
+        console.log('Fetched Purchase:', data);
+      } catch (err) {
+        console.error('Fetch Error:', err);
       }
-    })
-      .then(res => {
-        if (res.ok) {
-          alert("✅ Purchase deleted successfully.");
-          navigate("/purchases");
-        } else {
-          return res.json().then(err => {
-            throw new Error(err.message || "❌ Failed to delete.");
-          });
+    };
+
+    fetchPurchase();
+  }, [baseUrl, endpoint]);
+
+  // Handle delete button click
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this purchase?')) {
+      try {
+        const response = await fetch(`${baseUrl}${endpoint}`, {
+          method: 'DELETE',
+          headers: { Accept: 'application/json' },
+        });
+        console.log('Delete response:', response.status);
+
+        if (!response.ok) {
+          alert('❌ Delete failed! Please check the backend or network.');
+          return;
         }
-      })
-      .catch(err => alert(err.message));
+
+        alert('✅ Purchase deleted successfully!');
+        navigate('/purchases');
+      } catch (err) {
+        console.error('Fetch Error:', err);
+        alert('⚠️ Error while deleting. See console.');
+      }
+    }
   };
 
-  if (!purchase) return <div className="text-center mt-5">Loading...</div>;
-
   return (
-    <div className="container mt-5">
-      <div className="card shadow border-danger">
-        <div className="card-header bg-danger text-white">
-          <h4>Confirm Deletion</h4>
-        </div>
-        <div className="card-body">
-          <p className="text-danger fw-bold">Are you sure you want to delete the following purchase?</p>
-          <table className="table table-bordered">
-            <tbody>
-              <tr>
-                <th>Purchase ID</th>
-                <td>{purchase.id}</td>
-              </tr>
-              <tr>
-                <th>Purchase Date</th>
-                <td>{new Date(purchase.purchase_date).toLocaleDateString()}</td>
-              </tr>
-              <tr>
-                <th>Supplier</th>
-                <td>{purchase.supplier?.name || 'N/A'}</td>
-              </tr>
-              <tr>
-                <th>Discount</th>
-                <td>৳{parseFloat(purchase.discount).toFixed(2)}</td>
-              </tr>
-              <tr>
-                <th>Paid Amount</th>
-                <td>৳{parseFloat(purchase.paid_amount).toFixed(2)}</td>
-              </tr>
-              <tr>
-                <th>Total Products</th>
-                <td>{purchase.details?.length || 0}</td>
-              </tr>
-            </tbody>
-          </table>
+    <div style={styles.confirmContainer}>
+      <h2 style={styles.heading}>Confirm Delete Purchase ID #{purchaseId}</h2>
+      <p style={styles.paragraph}>Are you sure you want to delete this purchase?</p>
 
-          <form onSubmit={handleDelete} className="d-inline">
-            <button type="submit" className="btn btn-danger me-2">Yes, Delete</button>
-          </form>
-          <Link to="/purchases" className="btn btn-secondary">Cancel</Link>
-        </div>
-      </div>
+      <input
+        type="button"
+        className="btn-danger"
+        onClick={handleDelete}
+        value="Yes, Confirm Delete"
+        style={styles.btnDanger}
+      />
+      <br />
+      <Link to="/purchases" className="btn-back" style={styles.btnBack}>
+        ← Cancel
+      </Link>
     </div>
   );
 };
 
-export default DeletePurchase;
+// Inline styles equivalent to your scoped CSS
+const styles = {
+  confirmContainer: {
+    maxWidth: '500px',
+    margin: '50px auto',
+    padding: '30px',
+    backgroundColor: '#fff3f3',
+    border: '1px solid #f5c6cb',
+    borderRadius: '12px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    textAlign: 'center',
+  },
+  heading: {
+    color: '#dc3545',
+    marginBottom: '20px',
+  },
+  paragraph: {
+    fontSize: '18px',
+    marginBottom: '30px',
+  },
+  btnDanger: {
+    padding: '10px 20px',
+    fontWeight: 'bold',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: '#dc3545',
+    color: 'white',
+    cursor: 'pointer',
+  },
+  btnBack: {
+    marginTop: '20px',
+    display: 'inline-block',
+    backgroundColor: '#6c757d',
+    color: 'white',
+    padding: '8px 14px',
+    borderRadius: '6px',
+    textDecoration: 'none',
+  },
+};
+
+export default ConfirmDeletePurchase;

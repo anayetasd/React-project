@@ -1,189 +1,187 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 
 const EditOrder = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
 
-  const [form, setForm] = useState({
-    customer_id: "",
-    order_total: "",
-    discount: "",
-    paid_amount: "",
-    shipping_address: ""
-  });
-
+  const [form, setForm] = useState(null);
   const [customers, setCustomers] = useState([]);
 
+  const baseUrl = 'http://anayet.intelsofts.com/project_app/public/api/';
+
   useEffect(() => {
-    // Get Order Details
-    fetch(`${baseUrl}/orders/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.id) setForm(data);
-      });
+  const fetchData = async () => {
+    try {
+      const orderRes = await fetch(`${baseUrl}orders/${id}`);
+      const orderData = await orderRes.json();
+      console.log('Order fetched:', orderData);
+      setForm(orderData.order ?? orderData);
 
-    // Get Customer List
-    fetch(`${baseUrl}/customers`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setCustomers(data);
-        else if (Array.isArray(data.data)) setCustomers(data.data); // optional structure handling
-      });
-  }, [id]);
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+      const customerRes = await fetch(`${baseUrl}customers`);
+      const customerData = await customerRes.json();
+      console.log('Customers fetched:', customerData);
+      setCustomers(customerData.customers ?? customerData);
+    } catch (error) {
+      console.error('Fetch error:', error);
+    }
   };
 
-  const handleSubmit = (e) => {
+  fetchData();
+}, [id]);
+
+
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    fetch(`${baseUrl}/orders/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(form)
-    })
-      .then((res) => res.json())
-      .then(() => navigate("/orders"))
-      .catch((err) => console.error("Update error:", err));
+
+    try {
+      const res = await fetch(`${baseUrl}orders/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (res.ok) {
+        alert('✅ Order updated successfully!');
+        navigate('/orders');
+      } else {
+        const err = await res.json();
+        alert('❌ Failed: ' + (err.message || 'Something went wrong'));
+      }
+    } catch (error) {
+      console.error('Update error:', error);
+      alert('❌ Server error during update.');
+    }
   };
+
+  const containerStyle = {
+    maxWidth: '1000px',
+    margin: '40px auto',
+    background: '#ffffff',
+    padding: '30px 40px',
+    borderRadius: '12px',
+    boxShadow: '0 0 15px rgba(0,0,0,0.08)',
+    fontFamily: `'Segoe UI', Tahoma, Geneva, Verdana, sans-serif`,
+  };
+
+  const labelStyle = {
+    fontWeight: 600,
+    display: 'block',
+    marginBottom: '8px',
+    color: '#333',
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '10px 12px',
+    marginBottom: '20px',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    fontSize: '15px',
+    boxSizing: 'border-box',
+    resize: 'vertical',
+  };
+
+  const buttonStyle = {
+    backgroundColor: '#005792',
+    color: 'white',
+    padding: '12px 20px',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '16px',
+    cursor: 'pointer',
+    width: '100%',
+    transition: 'background-color 0.3s ease',
+  };
+
+  const backButtonStyle = {
+    display: 'inline-block',
+    margin: '20px auto 0 auto',
+    padding: '10px 20px',
+    backgroundColor: '#198754',
+    color: 'white',
+    textDecoration: 'none',
+    borderRadius: '8px',
+    fontWeight: 600,
+    transition: 'background-color 0.3s ease',
+  };
+
+  const headingStyle = {
+    textAlign: 'center',
+    marginBottom: '25px',
+    color: '#005792',
+  };
+
+  if (!form) return <div>Loading...</div>;
 
   return (
-    <>
-      <Link className="btn-back" to="/orders">Back</Link>
+    <div style={containerStyle}>
+      <Link to="/orders" style={backButtonStyle}>
+        ← Back
+      </Link>
+      <h2 style={headingStyle}>Edit Order {form.id}</h2>
 
-      <div className="form-container">
-        <h2>Edit Order #{id}</h2>
+      <form onSubmit={handleUpdate}>
+        <label style={labelStyle} htmlFor="customer_id">Customer</label>
+        <select
+          style={inputStyle}
+          id="customer_id"
+          value={form.customer_id}
+          onChange={(e) => setForm({ ...form, customer_id: e.target.value })}
+          required
+        >
+          {customers.map((customer) => (
+            <option key={customer.id} value={customer.id}>
+              {customer.name}
+            </option>
+          ))}
+        </select>
 
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="customer_id">Customer</label>
-          <select
-            name="customer_id"
-            value={form.customer_id}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Customer</option>
-            {customers.map((customer) => (
-              <option key={customer.id} value={customer.id}>
-                {customer.name}
-              </option>
-            ))}
-          </select>
+        <label style={labelStyle} htmlFor="order_total">Order Total</label>
+        <input
+          style={inputStyle}
+          type="text"
+          id="order_total"
+          value={form.order_total}
+          onChange={(e) => setForm({ ...form, order_total: e.target.value })}
+          required
+        />
 
-          <label htmlFor="order_total">Order Total</label>
-          <input
-            type="text"
-            name="order_total"
-            value={form.order_total}
-            onChange={handleChange}
-            required
-          />
+        <label style={labelStyle} htmlFor="discount">Discount</label>
+        <input
+          style={inputStyle}
+          type="text"
+          id="discount"
+          value={form.discount}
+          onChange={(e) => setForm({ ...form, discount: e.target.value })}
+        />
 
-          <label htmlFor="discount">Discount</label>
-          <input
-            type="text"
-            name="discount"
-            value={form.discount}
-            onChange={handleChange}
-          />
+        <label style={labelStyle} htmlFor="paid_amount">Paid Amount</label>
+        <input
+          style={inputStyle}
+          type="text"
+          id="paid_amount"
+          value={form.paid_amount}
+          onChange={(e) => setForm({ ...form, paid_amount: e.target.value })}
+          required
+        />
 
-          <label htmlFor="paid_amount">Paid Amount</label>
-          <input
-            type="text"
-            name="paid_amount"
-            value={form.paid_amount}
-            onChange={handleChange}
-            required
-          />
+        <label style={labelStyle} htmlFor="shipping_address">Address</label>
+        <textarea
+          style={inputStyle}
+          id="shipping_address"
+          rows="4"
+          value={form.shipping_address}
+          onChange={(e) => setForm({ ...form, shipping_address: e.target.value })}
+          required
+        ></textarea>
 
-          <label htmlFor="shipping_address">Address</label>
-          <textarea
-            name="shipping_address"
-            rows="4"
-            value={form.shipping_address}
-            onChange={handleChange}
-            required
-          ></textarea>
-
-          <input type="submit" value="Update" />
-        </form>
-      </div>
-
-      <style>{`
-        .form-container {
-          max-width: 1000px;
-          margin: 40px auto;
-          background: #ffffff;
-          padding: 30px 40px;
-          border-radius: 12px;
-          box-shadow: 0 0 15px rgba(0,0,0,0.08);
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .form-container h2 {
-          text-align: center;
-          margin-bottom: 25px;
-          color: #005792;
-        }
-
-        label {
-          font-weight: 600;
-          display: block;
-          margin-bottom: 8px;
-          color: #333;
-        }
-
-        select, input[type="text"], textarea {
-          width: 100%;
-          padding: 10px 12px;
-          margin-bottom: 20px;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          font-size: 15px;
-          box-sizing: border-box;
-          resize: vertical;
-        }
-
-        input[type="submit"] {
-          background-color: #005792;
-          color: white;
-          padding: 12px 20px;
-          border: none;
-          border-radius: 8px;
-          font-size: 16px;
-          cursor: pointer;
-          width: 100%;
-          transition: background-color 0.3s ease;
-        }
-
-        input[type="submit"]:hover {
-          background-color: #003f66;
-        }
-
-        .btn-back {
-          display: inline-block;
-          margin: 20px auto 0 auto;
-          padding: 10px 20px;
-          background-color: #198754;
-          color: white;
-          text-decoration: none;
-          border-radius: 8px;
-          font-weight: 600;
-          transition: background-color 0.3s ease;
-        }
-
-        .btn-back:hover {
-          background-color: #145c32;
-        }
-      `}</style>
-    </>
+        <input type="submit" value="Update" style={buttonStyle} />
+      </form>
+    </div>
   );
 };
 

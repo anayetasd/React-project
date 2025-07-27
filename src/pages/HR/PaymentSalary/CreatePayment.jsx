@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const CreateEmployeeSalary = () => {
+const NewEmployeeSalary = () => {
   const navigate = useNavigate();
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
 
   const [form, setForm] = useState({
     name: "",
+    // employee_id: "",
     payment_date: "",
     employee_administrator_id: "",
     payment_method_id: "",
@@ -16,69 +16,171 @@ const CreateEmployeeSalary = () => {
 
   const [administrators, setAdministrators] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
+  // Fetch dropdown data on mount
   useEffect(() => {
-    fetch(`${baseUrl}/employee-administrators`)
-      .then((res) => res.json())
-      .then((data) => setAdministrators(data));
+    const fetchData = async () => {
+      try {
+        const [adminRes, paymentRes, empRes] = await Promise.all([
+          fetch(
+            "http://anayet.intelsofts.com/project_app/public/api/administrators"
+          ),
+          fetch(
+            "http://anayet.intelsofts.com/project_app/public/api/paymentmethods"
+          ),
+          fetch("http://anayet.intelsofts.com/project_app/public/api/employees"),
+        ]);
 
-    fetch(`${baseUrl}/payment-methods`)
-      .then((res) => res.json())
-      .then((data) => setPayments(data));
+        const adminData = await adminRes.json();
+        const paymentData = await paymentRes.json();
+        const employeeData = await empRes.json();
+
+        setAdministrators(adminData.data || adminData);
+        setPayments(paymentData.data || paymentData);
+        setEmployees(employeeData.employees || []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        alert("Error fetching dropdown data.");
+      }
+    };
+
+    fetchData();
   }, []);
 
+  // Handle form input changes
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = async (e) => {
+  // Submit form
+  const submitForm = async (e) => {
     e.preventDefault();
 
-    await fetch(`${baseUrl}/employeesalarys`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    });
+    // Basic frontend validation
+    if (
+      !form.name ||
+      !form.payment_date ||
+      !form.employee_administrator_id ||
+      !form.payment_method_id ||
+      !form.total_amount ||
+      !form.paid_amount
+    ) {
+      alert("Please fill in all required fields.");
+      return;
+    }
 
-    navigate("/employee-salary");
+    try {
+      const payload = {
+        name: form.name,
+        payment_date: form.payment_date,
+        employee_administrator_id: form.employee_administrator_id,
+        payment_method_id: form.payment_method_id,
+        total_amount: Number(form.total_amount),
+        paid_amount: Number(form.paid_amount),
+      };
+
+      const res = await fetch(
+        "http://anayet.intelsofts.com/project_app/public/api/employeesalarys",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to save salary");
+      }
+
+      alert("✅ Employee Salary Saved Successfully!");
+      navigate("/employeesalarys");
+    } catch (error) {
+      console.error("Submit error:", error);
+      alert("❌ Error saving salary: " + error.message);
+    }
   };
 
   return (
-    <div className="form-container">
-      <h2>New Employee Salary</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input type="text" name="name" value={form.name} onChange={handleChange} />
+    <div className="form-container" style={styles.formContainer}>
+      <h2 style={styles.heading}>New Employee Salary</h2>
+      <form onSubmit={submitForm}>
+        <div style={styles.formGrid}>
+          <div style={styles.formGroup}>
+            <label htmlFor="name" style={styles.label}>
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="payment_date">Payment Date</label>
-            <input type="date" name="payment_date" value={form.payment_date} onChange={handleChange} />
+          
+
+          <div style={styles.formGroup}>
+            <label htmlFor="payment_date" style={styles.label}>
+              Payment Date
+            </label>
+            <input
+              type="date"
+              id="payment_date"
+              name="payment_date"
+              value={form.payment_date}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="employee_administrator_id">Administrator</label>
-            <select name="employee_administrator_id" value={form.employee_administrator_id} onChange={handleChange}>
-              <option value="">Select Administrator</option>
+          <div style={styles.formGroup}>
+            <label htmlFor="employee_administrator_id" style={styles.label}>
+              Administrator
+            </label>
+            <select
+              id="employee_administrator_id"
+              name="employee_administrator_id"
+              value={form.employee_administrator_id}
+              onChange={handleChange}
+              required
+              style={styles.select}
+            >
+              <option value="">-- Select --</option>
               {administrators.map((admin) => (
                 <option key={admin.id} value={admin.id}>
-                  {admin.role}
+                  {admin.name || admin.role}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="payment_method_id">Payment Method</label>
-            <select name="payment_method_id" value={form.payment_method_id} onChange={handleChange}>
-              <option value="">Select Payment Method</option>
+          <div style={styles.formGroup}>
+            <label htmlFor="payment_method_id" style={styles.label}>
+              Payment Method
+            </label>
+            <select
+              id="payment_method_id"
+              name="payment_method_id"
+              value={form.payment_method_id}
+              onChange={handleChange}
+              required
+              style={styles.select}
+            >
+              <option value="">-- Select --</option>
               {payments.map((payment) => (
                 <option key={payment.id} value={payment.id}>
                   {payment.name}
@@ -87,97 +189,106 @@ const CreateEmployeeSalary = () => {
             </select>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="total_amount">Total Amount</label>
-            <input type="text" name="total_amount" value={form.total_amount} onChange={handleChange} />
+          <div style={styles.formGroup}>
+            <label htmlFor="total_amount" style={styles.label}>
+              Total Amount
+            </label>
+            <input
+              type="number"
+              id="total_amount"
+              name="total_amount"
+              value={form.total_amount}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="paid_amount">Paid Amount</label>
-            <input type="text" name="paid_amount" value={form.paid_amount} onChange={handleChange} />
+          <div style={styles.formGroup}>
+            <label htmlFor="paid_amount" style={styles.label}>
+              Paid Amount
+            </label>
+            <input
+              type="number"
+              id="paid_amount"
+              name="paid_amount"
+              value={form.paid_amount}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
           </div>
 
-          <button type="submit" className="btn-submit">
+          <button type="submit" style={styles.submitButton}>
             💾 Save Salary
           </button>
         </div>
       </form>
-
-      {/* Include styles inline or move to a CSS file */}
-      <style>{`
-        .form-container {
-          max-width: 1200px;
-          margin: 40px auto;
-          padding: 40px;
-          background-color: #ffffff;
-          border-radius: 14px;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .form-container h2 {
-          text-align: center;
-          margin-bottom: 35px;
-          color: #0d6efd;
-          font-weight: 700;
-          font-size: 28px;
-        }
-
-        .form-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 25px;
-        }
-
-        .form-group {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .form-group label {
-          font-weight: 600;
-          margin-bottom: 8px;
-          color: #333;
-        }
-
-        .form-group input,
-        .form-group select {
-          padding: 12px 14px;
-          border: 1px solid #ced4da;
-          border-radius: 10px;
-          font-size: 15px;
-          transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-          border-color: #0d6efd;
-          box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
-          outline: none;
-        }
-
-        .btn-submit {
-          display: block;
-          width: 200px;
-          margin: 0 auto;
-          padding: 12px;
-          font-size: 16px;
-          background-color: #198754;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: bold;
-          transition: background-color 0.3s ease;
-          text-align: center;
-        }
-
-        .btn-submit:hover {
-          background-color: #157347;
-        }
-      `}</style>
     </div>
   );
 };
 
-export default CreateEmployeeSalary;
+const styles = {
+  formContainer: {
+    Width: "1000px",
+    margin: "40px auto",
+    padding: "30px 40px",
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  },
+  heading: {
+    textAlign: "center",
+    color: "#0d6efd",
+    fontWeight: "700",
+    fontSize: "28px",
+    marginBottom: "30px",
+  },
+  formGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "25px 30px",
+  },
+  formGroup: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  label: {
+    fontWeight: "600",
+    marginBottom: "8px",
+    color: "#333",
+    fontSize: "15px",
+  },
+  input: {
+    padding: "10px 14px",
+    fontSize: "15px",
+    border: "1.5px solid #ced4da",
+    borderRadius: "8px",
+    transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+  },
+  select: {
+    padding: "10px 14px",
+    fontSize: "15px",
+    border: "1.5px solid #ced4da",
+    borderRadius: "8px",
+    transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+  },
+  submitButton: {
+    gridColumn: "1 / -1",
+    padding: "14px",
+    fontSize: "17px",
+    fontWeight: "700",
+    color: "#fff",
+    backgroundColor: "#198754",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    textAlign: "center",
+    transition: "background-color 0.3s ease",
+    marginTop: "20px",
+    width: "20%",
+  },
+};
+
+export default NewEmployeeSalary;

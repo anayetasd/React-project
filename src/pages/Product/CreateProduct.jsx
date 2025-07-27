@@ -1,59 +1,64 @@
 import React, { useEffect, useState } from "react";
 
-
 const CreateProduct = () => {
+  const [productNames, setProductNames] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     photo: null,
     regular_price: "",
     offer_price: "",
     barcode: "",
-    product_unit_id: "",
-    product_section_id: "",
-    product_category_id: "",
   });
 
-  const [units, setUnits] = useState([]);
-  const [sections, setSections] = useState([]);
-  const [categories, setCategories] = useState([]);
-
-  // Fetch dropdown data
   useEffect(() => {
-    fetch("http://anayet.intelsofts.com/project_app/public/api/product-dropdowns")
-      .then(res => res.json())
-      .then(data => {
-        setUnits(data.units || []);
-        setSections(data.sections || []);
-        setCategories(data.categories || []);
+    fetch("http://anayet.intelsofts.com/project_app/public/api/products")
+      .then((res) => res.json())
+      .then((data) => {
+        setProductNames(data.products);
       })
-      .catch(err => console.error("Dropdown fetch error:", err));
+      .catch((err) => {
+        console.error("Error fetching products:", err);
+      });
   }, []);
 
-  // Handle form changes
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "photo") {
-      setFormData({ ...formData, photo: files[0] });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  // Handle submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const productData = new FormData();
+  // 📷 File input change handler
+  const handleFileChange = (e) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      photo: e.target.files[0],
+    }));
+  };
 
-    for (const key in formData) {
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  const productData = new FormData();
+  for (const key in formData) {
+    if (formData[key]) {
       productData.append(key, formData[key]);
     }
+  }
 
-    try {
-      const response = await fetch("http://anayet.intelsofts.com/project_app/public/api/products", {
+  try {
+    const response = await fetch(
+      "http://anayet.intelsofts.com/project_app/public/api/products",
+      {
         method: "POST",
         body: productData,
-      });
+      }
+    );
 
+    // Instead of assuming JSON, get text first:
+    const text = await response.text();
+    try {
+      const data = JSON.parse(text);
       if (response.ok) {
         alert("✅ Product created successfully!");
         setFormData({
@@ -62,18 +67,20 @@ const CreateProduct = () => {
           regular_price: "",
           offer_price: "",
           barcode: "",
-          product_unit_id: "",
-          product_section_id: "",
-          product_category_id: "",
         });
       } else {
-        const error = await response.json();
-        alert("❌ Failed: " + (error.message || "Unknown error"));
+        alert("❌ Failed: " + (data.message || "Server error"));
       }
-    } catch (error) {
-      alert("❌ Error: " + error.message);
+    } catch {
+      // JSON.parse failed => show raw text
+      console.error("Response text:", text);
+      alert("❌ Server returned invalid JSON (maybe HTML page). Check server logs.");
     }
-  };
+  } catch (error) {
+    alert("❌ Error: " + error.message);
+  }
+};
+
 
   return (
     <div className="container">
@@ -81,16 +88,21 @@ const CreateProduct = () => {
         <h2>Create New Product</h2>
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="mb-3">
-            <label className="form-label">Product Name</label>
-            <input
-              type="text"
+            <label htmlFor="name" className="form-label">Product Name</label>
+            <select
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="form-control"
-              placeholder="Enter product name"
+              className="form-select"
               required
-            />
+            >
+              <option value="">Select Product</option>
+              {productNames.map((item) => (
+                <option key={item.id} value={item.name}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mb-3">
@@ -98,7 +110,7 @@ const CreateProduct = () => {
             <input
               type="file"
               name="photo"
-              onChange={handleChange}
+              onChange={handleFileChange}
               className="form-control"
               accept="image/*"
               required
@@ -139,60 +151,6 @@ const CreateProduct = () => {
               onChange={handleChange}
               className="form-control"
             />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Product Unit</label>
-            <select
-              name="product_unit_id"
-              value={formData.product_unit_id}
-              onChange={handleChange}
-              className="form-select"
-              required
-            >
-              <option value="">Select Unit</option>
-              {units.map((unit) => (
-                <option key={unit.id} value={unit.id}>
-                  {unit.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Product Section</label>
-            <select
-              name="product_section_id"
-              value={formData.product_section_id}
-              onChange={handleChange}
-              className="form-select"
-              required
-            >
-              <option value="">Select Section</option>
-              {sections.map((section) => (
-                <option key={section.id} value={section.id}>
-                  {section.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Product Category</label>
-            <select
-              name="product_category_id"
-              value={formData.product_category_id}
-              onChange={handleChange}
-              className="form-select"
-              required
-            >
-              <option value="">Select Category</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
           </div>
 
           <button type="submit" className="btn btn-primary w-100">

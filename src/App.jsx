@@ -22,8 +22,6 @@ import EditStock from './pages/Stock/EditStock'
 import ShowStock from './pages/Stock/ShowStock'
 import DeleteStock from './pages/Stock/DeleteStock'
 
-import CreateInvoice from './pages/Accounts/CreateInvoice'
-import ManageInvoice from './pages/Accounts/ManageInvoice'
 
 import ManageOrder from './pages/Order/ManageOrder'
 import CreateOrder from './pages/Order/CreateOrder'
@@ -71,9 +69,11 @@ import ShowSale from './pages/Sales/ShowSales'
 import DeleteSale from './pages/Sales/DeleteSales'
 
 
-import CreateMoney from './pages/MR/CreateMR'
-import ManageMoney from './pages/MR/ManageMR'
-
+import ManageMR from './pages/MR/ManageMr'
+import CreateMR from './pages/MR/CreateMR'
+import EditMR from './pages/MR/EditMr'
+import ShowMR from './pages/MR/ShowMR'
+import DeleteMR from './pages/MR/DeleteMr'
 
 import ManageEmployee from './pages/HR/Employee/ManageEmployee'
 import CreateEmployee from './pages/HR/Employee/CreateEmployee'
@@ -159,11 +159,14 @@ const App = () => {
           <Route path="/sales/:id/confirm" element={<DeleteSale/>} />  
 
 
-          <Route path="create-invoice" element={<CreateInvoice />} />      
-          <Route path="manage-invoice" element={<ManageInvoice />} />   
+          {/* <Route path="create-invoice" element={<CreateInvoice />} />      
+          <Route path="manage-invoice" element={<ManageInvoice />} />    */}
 
-          <Route path="create-MR" element={<CreateMoney />} />   
-          <Route path="manage-MR" element={<ManageMoney />} />   
+          <Route path="/mrs" element={<ManageMR />} />   
+          <Route path="/mrs/create" element={<CreateMR />} />   
+          <Route path="/mrs/:id/edit" element={<EditMR />} />   
+          <Route path="/mrs/:id" element={<ShowMR />} />   
+          <Route path="/mrs/:id/confirm" element={<DeleteMR />} />   
 
 
           <Route path="/employees" element={<ManageEmployee />} />  

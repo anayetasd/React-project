@@ -6,18 +6,19 @@ const EmployeeSalaryList = () => {
   const [loading, setLoading] = useState(true);
   const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
 
-  useEffect(() => {
-    fetch(`${baseUrl}/employeesalarys`)
-      .then((res) => res.json())
-      .then((data) => {
-        setEmployeeSalaries(data.employeesalarys);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        setLoading(false);
-      });
-  }, []);
+ useEffect(() => {
+  fetch(`${baseUrl}/employeesalarys`)
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("API Response:", data.employeesalarys); 
+      setEmployeeSalaries(data.employeesalarys);
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+      setLoading(false);
+    });
+}, []);
 
   return (
     <div className="container mt-5 p-4" style={{
@@ -61,7 +62,7 @@ const EmployeeSalaryList = () => {
                   <td>{salary.id}</td>
                   <td>{salary.name}</td>
                   <td>{salary.payment_date}</td>
-                  <td>{salary.administrator?.role ?? "N/A"}</td>
+                  <td>{ salary.administrator?.name || 'N/A' }</td>
                   <td>{salary.payment?.name ?? "N/A"}</td>
                   <td>{salary.total_amount}</td>
                   <td>{salary.paid_amount}</td>

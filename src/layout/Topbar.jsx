@@ -275,7 +275,7 @@ const Topbar = () => {
                         </li>
                         <li className="nav-item dropdown"><a className="nav-link pe-0 ps-2" id="navbarDropdownUser" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <div className="avatar avatar-xl">
-                                <img className="rounded-circle" src="assets/img/team/3-thumb.png" alt />
+                                <img className="rounded-circle" src="assets/img/phto1.jpg" alt />
                             </div>
                         </a>
                             <div className="dropdown-menu dropdown-caret dropdown-caret dropdown-menu-end py-0" aria-labelledby="navbarDropdownUser">

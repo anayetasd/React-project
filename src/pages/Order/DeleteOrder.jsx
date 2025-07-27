@@ -1,93 +1,168 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 
 const DeleteOrder = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
-
   const [order, setOrder] = useState(null);
 
-  useEffect(() => {
-    fetch(`${baseUrl}/orders/${id}`)
-      .then(res => res.json())
-      .then(data => setOrder(data))
-      .catch(err => console.error("Fetch error:", err));
-  }, [id]);
+  const baseUrl = 'http://anayet.intelsofts.com/project_app/public/api/';
+  const endpoint = `orders/${id}`;
 
-  const handleDelete = (e) => {
-    e.preventDefault();
-    fetch(`${baseUrl}/orders/${id}`, {
-      method: "DELETE",
-    })
-      .then(res => {
+ useEffect(() => {
+  const fetchOrder = async () => {
+    try {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Fetched data:', data);
+        // Adjust here based on actual response structure:
+        setOrder(data.order ?? data ?? {});
+      } else {
+        alert('Failed to load order data');
+        navigate('/orders');
+      }
+    } catch (error) {
+      alert('Error fetching order data: ' + error.message);
+      navigate('/orders');
+    }
+  };
+
+  fetchOrder();
+}, [id]);
+
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this order?')) {
+      try {
+        const res = await fetch(`${baseUrl}${endpoint}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        });
+
         if (res.ok) {
-          navigate("/orders");
+          alert('Order deleted successfully.');
+          navigate('/orders');
         } else {
-          alert("Failed to delete order.");
+          const data = await res.json();
+          alert('Delete failed: ' + (data.message || 'Unknown error'));
         }
-      })
-      .catch(err => console.error("Delete error:", err));
+      } catch (error) {
+        alert('Error deleting order: ' + error.message);
+        console.error(error);
+      }
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <Link to="/orders" className="btn btn-success" style={styles.backBtn}>
-        Back
-      </Link>
+    <div className="delete-container">
+      <h1>Delete Order</h1>
+      <Link className="btn-back" to="/orders">← Back to Orders</Link>
 
-      <p style={{ fontSize: "18px" }}>Are you sure?</p>
-      <h2 style={styles.customerId}>
-        {order ? `Customer ID: ${order.customer_id}` : "Loading..."}
-      </h2>
+      {order?.id ? (
+        <div className="delete-box">
+          <h3>Are you sure you want to delete this order?</h3>
+          <ul>
+            <li><strong>Order ID:</strong> {order.id}</li>
+            <li><strong>Order Total:</strong> {order.order_total}</li>
+            <li><strong>Customer Name:</strong> {order.customer?.name || 'N/A'}</li>
+          </ul>
 
-      <form onSubmit={handleDelete}>
-        <input
-          type="submit"
-          className="btn btn-danger"
-          style={styles.confirmBtn}
-          value="Confirm"
-        />
-      </form>
+          
+
+          <button className="btn-delete" onClick={handleDelete}>Confirm Delete</button>
+        </div>
+      ) : (
+        <div>Loading order data...</div>
+      )}
+
+      <style>{`
+        .delete-container {
+          max-width: 600px;
+          margin: 40px auto;
+          background: #fff;
+          padding: 30px 40px;
+          border-radius: 12px;
+          box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+          font-family: 'Segoe UI', sans-serif;
+        }
+
+        h1 {
+          text-align: center;
+          color: #dc3545;
+          margin-bottom: 20px;
+        }
+
+        .delete-box {
+          background-color: #fff3f3;
+          padding: 25px;
+          border: 1px solid #f5c6cb;
+          border-radius: 10px;
+          text-align: left;
+        }
+
+        .delete-box h3 {
+          color: #c82333;
+          margin-bottom: 15px;
+          text-align: center;
+        }
+
+        .delete-box ul {
+          list-style-type: none;
+          padding: 0;
+          margin-bottom: 20px;
+        }
+
+        .delete-box li {
+          padding: 6px 0;
+          font-size: 16px;
+          color: #333;
+        }
+
+        .btn-delete {
+          background-color: #dc3545;
+          color: white;
+          padding: 10px 18px;
+          border: none;
+          border-radius: 6px;
+          font-weight: bold;
+          font-size: 15px;
+          cursor: pointer;
+          transition: 0.3s ease;
+          width: 100%;
+        }
+
+        .btn-delete:hover {
+          background-color: #c82333;
+        }
+
+        .btn-back {
+          display: inline-block;
+          margin-bottom: 20px;
+          background-color: #6c757d;
+          color: white;
+          padding: 8px 14px;
+          border-radius: 6px;
+          text-decoration: none;
+          font-weight: 500;
+          transition: 0.3s ease;
+        }
+
+        .btn-back:hover {
+          background-color: #5a6268;
+        }
+      `}</style>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: "500px",
-    margin: "60px auto",
-    padding: "30px 40px",
-    background: "#fff",
-    borderRadius: "12px",
-    boxShadow: "0 0 15px rgba(0,0,0,0.1)",
-    textAlign: "center",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-  },
-  customerId: {
-    margin: "30px 0",
-    color: "#005792",
-  },
-  backBtn: {
-    marginBottom: "20px",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    fontWeight: 600,
-    textDecoration: "none",
-    backgroundColor: "#198754",
-    color: "white",
-    transition: "background-color 0.3s ease",
-  },
-  confirmBtn: {
-    padding: "12px 25px",
-    fontSize: "16px",
-    borderRadius: "8px",
-    backgroundColor: "#dc3545",
-    border: "none",
-    color: "#fff",
-    cursor: "pointer",
-    transition: "background-color 0.3s ease",
-  },
 };
 
 export default DeleteOrder;

@@ -1,90 +1,116 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const ShowSale = () => {
+const SaleView = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
-  const [sale, setSale] = useState(null);
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
+
+  const [sale, setSale] = useState({
+    id: '',
+    total_amount: '',
+    discount: '',
+    status: '',
+  });
 
   useEffect(() => {
-    fetch(`${baseUrl}/sales/${id}`)
-      .then((res) => res.json())
-      .then((data) => setSale(data))
-      .catch((error) => console.error("Error fetching sale:", error));
-  }, [id]);
+    const fetchSale = async () => {
+      try {
+        const res = await fetch(`http://anayet.intelsofts.com/project_app/public/api/sales/${id}`);
+        if (!res.ok) throw new Error('Failed to fetch sale data');
+        const raw = await res.json();
+        console.log('API Response:', raw);
+        setSale(raw.sale ?? raw.sales ?? raw.data ?? raw);
+      } catch (error) {
+        alert(error.message);
+        navigate('/sales');
+      }
+    };
 
-  if (!sale) return <div className="loading">Loading...</div>;
+    fetchSale();
+  }, [id, navigate]);
 
   return (
-    <div style={styles.body}>
-      <div style={styles.viewContainer}>
-        <Link to="/sales" style={styles.btnBack}>
-          Back
-        </Link>
+    <div className="view-container">
+      <button className="btn-back" onClick={() => navigate('/sales')}>Back</button>
 
-        <table style={styles.table}>
-          <tbody>
-            <tr>
-              <td style={styles.label}>Id</td>
-              <td>{sale.id}</td>
-            </tr>
-            <tr>
-              <td style={styles.label}>Total Amount</td>
-              <td>{sale.total_amount}</td>
-            </tr>
-            <tr>
-              <td style={styles.label}>Discount</td>
-              <td>{sale.discount}</td>
-            </tr>
-            <tr>
-              <td style={styles.label}>Status</td>
-              <td>{sale.status}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <table>
+        <tbody>
+          <tr>
+            <td>Id</td>
+            <td>{sale.id}</td>
+          </tr>
+          <tr>
+            <td>Total Amount</td>
+            <td>{sale.total_amount}</td>
+          </tr>
+          <tr>
+            <td>Discount</td>
+            <td>{sale.discount}</td>
+          </tr>
+          <tr>
+            <td>Status</td>
+            <td>{sale.status}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <style>{`
+        body {
+          background-color: #f4f6f8;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .view-container {
+          max-width: 950px;
+          margin: 50px auto;
+          background-color: #ffffff;
+          padding: 30px 40px;
+          border-radius: 10px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-back {
+          display: inline-block;
+          margin-bottom: 25px;
+          background-color: #28a745;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 6px;
+          text-decoration: none;
+          font-weight: 600;
+          transition: background-color 0.3s ease;
+          cursor: pointer;
+        }
+
+        .btn-back:hover {
+          background-color: #218838;
+          color: white;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 16px;
+        }
+
+        table td {
+          padding: 12px 15px;
+          border-bottom: 1px solid #ddd;
+          color: #333;
+        }
+
+        table tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+
+        table tr td:first-child {
+          font-weight: 600;
+          width: 35%;
+          color: #555;
+        }
+      `}</style>
     </div>
   );
 };
 
-const styles = {
-  body: {
-    backgroundColor: "#f4f6f8",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    padding: "50px 15px",
-  },
-  viewContainer: {
-    maxWidth: "950px",
-    margin: "0 auto",
-    backgroundColor: "#ffffff",
-    padding: "30px 40px",
-    borderRadius: "10px",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.05)",
-  },
-  btnBack: {
-    display: "inline-block",
-    marginBottom: "25px",
-    backgroundColor: "#28a745",
-    color: "white",
-    padding: "10px 20px",
-    borderRadius: "6px",
-    textDecoration: "none",
-    fontWeight: "600",
-    transition: "background-color 0.3s ease",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: "16px",
-  },
-  label: {
-    fontWeight: "600",
-    width: "35%",
-    color: "#555",
-    padding: "12px 15px",
-    borderBottom: "1px solid #ddd",
-    backgroundColor: "#f9f9f9",
-  },
-};
-
-export default ShowSale;
+export default SaleView;

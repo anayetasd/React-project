@@ -1,160 +1,187 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
-const Invoice = () => {
+const ViewOrder = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
+  const navigate = useNavigate();
+  const baseUrl = 'http://anayet.intelsofts.com/project_app/public/api/orders/';
 
   useEffect(() => {
-    fetch(`${baseUrl}/orders/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        console.log("Order response:", data);
-        // Adjust if your API wraps data like { success: true, data: {...} }
-        setOrder(data.data || data); 
-      })
-      .catch(err => console.error("Fetch error:", err));
-  }, [id]);
+    const fetchOrder = async () => {
+      try {
+        const res = await fetch(`${baseUrl}${id}`);
+        const data = await res.json();
+        console.log('Fetched order data:', data);
+        setOrder(data.order ?? data); // API response অনুযায়ী adjust করুন
+      } catch (error) {
+        console.error('Error fetching order:', error);
+        alert('Failed to load order data.');
+        navigate('/orders');
+      }
+    };
+
+    fetchOrder();
+  }, [id, navigate]);
+
+  const getProductName = (item) => {
+    return item.product?.name || item.product_name || 'N/A';
+  };
 
   const printInvoice = () => {
-    const content = document.getElementById("printInvoice").innerHTML;
-    const original = document.body.innerHTML;
-    document.body.innerHTML = content;
+    const printContent = document.getElementById('printInvoice').innerHTML;
+    const originalContent = document.body.innerHTML;
+    document.body.innerHTML = printContent;
     window.print();
-    document.body.innerHTML = original;
+    document.body.innerHTML = originalContent;
     window.location.reload();
   };
 
-  if (!order) return <p>Loading...</p>;
+  if (!order) return <div>Loading...</div>;
 
-  let subtotal = 0;
-  let totalDiscount = 0;
+  const subtotal = order.order_details?.reduce((sum, d) => sum + d.qty * d.price, 0) || 0;
+  const discountTotal = order.order_details?.reduce((sum, d) => sum + d.discount, 0) || 0;
+  const paid = order.paid_amount || 0;
+  const due = subtotal - discountTotal - paid;
+
+  const styles = {
+  container: {
+    maxWidth: '1100px',
+    margin: '40px auto',
+    padding: '30px 40px',
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    color: '#333',
+  },
+  heading: {
+    textAlign: 'center',
+    color: '#007bff',
+    marginBottom: '30px',
+    fontWeight: '700',
+    fontSize: '2rem',
+    letterSpacing: '1px',
+  },
+  infoWrapper: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '25px',
+  },
+  infoTable: {
+    fontSize: '15px',
+    padding: '8px 10px',
+    textAlign: 'left',
+    width: '48%',
+    borderCollapse: 'collapse',
+  },
+  productTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    marginBottom: '25px',
+  },
+  productTableThTd: {
+    border: '1px solid #ddd',
+    padding: '10px 15px',
+  },
+  productTableTh: {
+    backgroundColor: '#007bff',
+    color: '#fff',
+    fontWeight: '600',
+  },
+  summary: {
+    textAlign: 'right',
+    fontSize: '16px',
+    marginTop: '15px',
+    fontWeight: '600',
+  },
+  backBtn: {
+    display: 'inline-block',
+    marginBottom: '20px',
+    backgroundColor: '#28a745',
+    color: 'white',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontWeight: '600',
+  },
+  printBtn: {
+    backgroundColor: '#007bff',
+    color: 'white',
+    float: 'right',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+};
+
 
   return (
     <div style={styles.container} id="printInvoice">
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
-        <Link to="/orders" style={styles.btnBack}>← Back to Orders</Link>
-        <button onClick={printInvoice} style={styles.btnPrint}>🖨 Print Invoice</button>
-      </div>
+  <Link to="/orders" style={styles.backBtn}>← Back to Orders</Link>
+  <button onClick={printInvoice} style={styles.printBtn}>🖨 Print Invoice</button>
 
-      <h2 style={styles.title}>Sales Invoice</h2>
+  <h2 style={styles.heading}>Sales Invoice</h2>
 
+  <div style={styles.infoWrapper}>
+    {order.customer && (
       <table style={styles.infoTable}>
         <tbody>
-          <tr><td><strong>Invoice ID:</strong></td><td>{order.id}</td></tr>
-          <tr><td><strong>Order Date:</strong></td><td>{new Date(order.order_date).toLocaleDateString()}</td></tr>
-          <tr><td><strong>Shipping Address:</strong></td><td>{order.shipping_address}</td></tr>
+          <tr><td><strong>Customer Name:</strong></td><td>{order.customer.name}</td></tr>
+          <tr><td><strong>Mobile:</strong></td><td>{order.customer.mobile || 'N/A'}</td></tr>
+          <tr><td><strong>Email:</strong></td><td>{order.customer.email || 'N/A'}</td></tr>
         </tbody>
       </table>
+    )}
 
-      {order.customer && (
-        <table style={styles.infoTable}>
-          <tbody>
-            <tr><td><strong>Customer Name:</strong></td><td>{order.customer.name}</td></tr>
-            <tr><td><strong>Mobile:</strong></td><td>{order.customer.mobile}</td></tr>
-            <tr><td><strong>Email:</strong></td><td>{order.customer.email}</td></tr>
-          </tbody>
-        </table>
-      )}
+    <table style={styles.infoTable}>
+      <tbody>
+        <tr><td><strong>Invoice ID:</strong></td><td>{order.id}</td></tr>
+        <tr><td><strong>Order Date:</strong></td><td>{order.order_date ? new Date(order.order_date).toLocaleDateString() : 'N/A'}</td></tr>
+        <tr><td><strong>Shipping Address:</strong></td><td>{order.shipping_address || 'N/A'}</td></tr>
+      </tbody>
+    </table>
+    </div>
 
       <table style={styles.productTable}>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Rate</th>
-            <th>Discount</th>
-            <th>Total</th>
+            <th style={{ ...styles.productTableThTd, ...styles.productTableTh }}>#</th>
+            <th style={{ ...styles.productTableThTd, ...styles.productTableTh }}>Product</th>
+            <th style={{ ...styles.productTableThTd, ...styles.productTableTh }}>Qty</th>
+            <th style={{ ...styles.productTableThTd, ...styles.productTableTh }}>Rate</th>
+            <th style={{ ...styles.productTableThTd, ...styles.productTableTh }}>Discount</th>
+            <th style={{ ...styles.productTableThTd, ...styles.productTableTh }}>Total</th>
           </tr>
         </thead>
         <tbody>
-          {order.order_details?.map((item, index) => {
-            const lineTotal = item.qty * item.price;
-            subtotal += lineTotal;
-            totalDiscount += item.discount;
-            return (
-              <tr key={item.id}>
-                <td>{index + 1}</td>
-                <td>{item.product?.name ?? "N/A"}</td>
-                <td>{item.qty}</td>
-                <td>৳{item.price.toFixed(2)}</td>
-                <td>৳{item.discount.toFixed(2)}</td>
-                <td>৳{(lineTotal - item.discount).toFixed(2)}</td>
-              </tr>
-            );
-          })}
+          {order.order_details?.map((item, index) => (
+            <tr key={index}>
+              <td style={styles.productTableThTd}>{index + 1}</td>
+              <td style={styles.productTableThTd}>{getProductName(item)}</td>
+              <td style={styles.productTableThTd}>{item.qty}</td>
+              <td style={styles.productTableThTd}>৳{item.price.toFixed(2)}</td>
+              <td style={styles.productTableThTd}>৳{item.discount.toFixed(2)}</td>
+              <td style={styles.productTableThTd}>৳{(item.qty * item.price - item.discount).toFixed(2)}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
 
       <div style={styles.summary}>
         <p><strong>Subtotal:</strong> ৳{subtotal.toFixed(2)}</p>
-        <p><strong>Discount:</strong> ৳{totalDiscount.toFixed(2)}</p>
-        <p><strong>Paid:</strong> ৳{order.paid_amount?.toFixed(2)}</p>
-        <p><strong>Due:</strong> ৳{(subtotal - totalDiscount - (order.paid_amount ?? 0)).toFixed(2)}</p>
+        <p><strong>Discount:</strong> ৳{discountTotal.toFixed(2)}</p>
+        <p><strong>Paid:</strong> ৳{paid.toFixed(2)}</p>
+        <p><strong>Due:</strong> ৳{due.toFixed(2)}</p>
       </div>
 
-      <div style={{ textAlign: "right", marginTop: 20 }}>
-        <Link to="/mrs/create" style={styles.moneyReceiptBtn}>🧾 Money Receipt</Link>
+      <div style={{ textAlign: 'right', marginTop: 20 }}>
+        <Link to="/mrs/create" className="btn btn-success">🧾 Money Receipt</Link>
       </div>
     </div>
   );
 };
 
-const styles = {
-  container: {
-    maxWidth: "1100px",
-    margin: "40px auto",
-    padding: "30px",
-    backgroundColor: "#ffffff",
-    borderRadius: "10px",
-    boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-    fontFamily: "'Segoe UI', sans-serif",
-  },
-  title: {
-    textAlign: "center",
-    color: "#007bff",
-    marginBottom: "25px",
-  },
-  infoTable: {
-    marginBottom: "25px",
-    width: "100%",
-    borderSpacing: "0",
-  },
-  productTable: {
-    width: "100%",
-    borderCollapse: "collapse",
-    marginBottom: "20px",
-  },
-  summary: {
-    textAlign: "right",
-    fontSize: "15px",
-    marginTop: "15px",
-  },
-  btnBack: {
-    display: "inline-block",
-    backgroundColor: "#28a745",
-    color: "white",
-    padding: "8px 14px",
-    borderRadius: "6px",
-    textDecoration: "none",
-  },
-  btnPrint: {
-    backgroundColor: "#007bff",
-    color: "white",
-    padding: "8px 14px",
-    borderRadius: "6px",
-    border: "none",
-    cursor: "pointer",
-  },
-  moneyReceiptBtn: {
-    backgroundColor: "#28a745",
-    color: "white",
-    padding: "8px 14px",
-    borderRadius: "6px",
-    textDecoration: "none",
-  },
-};
-
-export default Invoice;
+export default ViewOrder;

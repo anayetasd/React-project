@@ -8,7 +8,7 @@ const ManageProduction = () => {
     fetch("http://anayet.intelsofts.com/project_app/public/api/productions")
       .then((res) => res.json())
       .then((data) => {
-        setProductions(data.productions); // Update this if your API returns a different structure
+        setProductions(data.productions);
       })
       .catch((err) => {
         console.error("Error fetching productions:", err);
@@ -42,11 +42,13 @@ const ManageProduction = () => {
           <tbody>
             {productions.length > 0 ? (
               productions.map((production) => (
-                <tr key={production.id}>
+                  <tr key={production.id}>
                   <td>{production.production_date}</td>
                   <td>{production.product?.name ?? "no name"}</td>
-                  <td>{production.rawMAterial?.name ?? "no name"}</td>
-                  <td>{production.rawMAterial?.unit ?? "no unit"}</td>
+                  <td>{production.raw_material?.name ?? "no name"}</td>
+                  <td>{production.raw_material?.unit ?? "no unit"}</td>
+
+
                   <td>{production.unit}</td>
                   <td>{production.quantity_produced}</td>
                   <td>

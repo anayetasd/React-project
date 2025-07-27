@@ -1,210 +1,164 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ import navigate
 
-const CreateEmployee = () => {
-  const navigate = useNavigate();
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
+const AddEmployee = () => {
+  const navigate = useNavigate(); // ✅ initialize navigate
 
   const [form, setForm] = useState({
     name: "",
     employeeshift_id: "",
     employee_categorie_id: "",
     joining_date: "",
-    photo: null,
     phone: "",
     address: "",
   });
 
+  const [photo, setPhoto] = useState(null);
   const [shifts, setShifts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
 
   useEffect(() => {
-    fetch(`${baseUrl}/employeeshifts`)
-      .then((res) => res.json())
-      .then((data) => setShifts(data));
-
-    fetch(`${baseUrl}/employeecategories`)
-      .then((res) => res.json())
-      .then((data) => setCategories(data));
+    const fetchDropdownData = async () => {
+      try {
+        const [shiftRes, categoryRes] = await Promise.all([
+          fetch(`${baseUrl}/employeeshifts`),
+          fetch(`${baseUrl}/employeecategories`),
+        ]);
+        const shiftData = await shiftRes.json();
+        const categoryData = await categoryRes.json();
+        setShifts(shiftData.shifts ?? shiftData);
+        setCategories(categoryData.categories ?? categoryData);
+      } catch (error) {
+        console.error("Dropdown fetch error:", error);
+      }
+    };
+    fetchDropdownData();
   }, []);
 
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "file" ? files[0] : value,
-    }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleFileChange = (e) => {
+    setPhoto(e.target.files[0]);
+  };
+
+  const submitEmployee = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-
-    for (let key in form) {
-      formData.append(key, form[key]);
-    }
+    Object.keys(form).forEach((key) => formData.append(key, form[key]));
+    if (photo) formData.append("photo", photo);
 
     try {
       const res = await fetch(`${baseUrl}/employees`, {
         method: "POST",
         body: formData,
       });
-
+      const data = await res.json();
       if (res.ok) {
-        alert("Employee created successfully!");
-        navigate("/employees");
+        alert("✅ Employee added successfully!");
+        setTimeout(() => {
+          navigate("/employees"); // ✅ redirect using react-router
+        }, 1000);
       } else {
-        alert("Failed to create employee.");
+        alert("❌ Error: " + JSON.stringify(data));
       }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An error occurred.");
+    } catch (err) {
+      alert("❌ Server error. Please try again.");
+      console.error(err);
     }
   };
 
   return (
-    <div className="form-container">
-      <style>{`
-        .form-container {
-          max-width: 1200px;
-          margin: 40px auto;
-          padding: 35px;
-          background-color: #f9f9f9;
-          border-radius: 15px;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-          font-family: 'Segoe UI', sans-serif;
-        }
-
-        .form-container h2 {
-          text-align: center;
-          margin-bottom: 30px;
-          color: #0d6efd;
-          font-weight: 700;
-          font-size: 28px;
-        }
-
-        .form-group {
-          margin-bottom: 20px;
-        }
-
-        .form-group label {
-          font-weight: 600;
-          display: block;
-          margin-bottom: 8px;
-          color: #212529;
-        }
-
-        .form-group input[type="text"],
-        .form-group input[type="email"],
-        .form-group input[type="file"],
-        .form-group input[type="date"],
-        .form-group input[type="number"],
-        .form-group select,
-        .form-group textarea {
-          width: 100%;
-          padding: 10px 14px;
-          border: 1px solid #ced4da;
-          border-radius: 10px;
-          font-size: 15px;
-          background-color: #fff;
-          transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-          border-color: #0d6efd;
-          box-shadow: 0 0 0 0.1rem rgba(13, 110, 253, 0.25);
-          outline: none;
-        }
-
-        .btn-submit {
-          width: 100%;
-          padding: 14px;
-          font-size: 17px;
-          background-color: #0d6efd;
-          color: white;
-          border: none;
-          border-radius: 10px;
-          cursor: pointer;
-          font-weight: 600;
-          transition: background-color 0.3s ease;
-        }
-
-        .btn-submit:hover {
-          background-color: #0b5ed7;
-        }
-      `}</style>
-
-      <h2>➕ Add New Employee</h2>
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <div className="form-group">
-          <label htmlFor="name">Name</label>
-          <input type="text" name="name" id="name" value={form.name} onChange={handleChange} />
+    <div style={styles.container}>
+      <h2 style={styles.header}>Add New Employee</h2>
+      <form onSubmit={submitEmployee} encType="multipart/form-data">
+        <div style={styles.formGroup}>
+          <label>Name</label>
+          <input name="name" value={form.name} onChange={handleChange} type="text" required style={styles.input} />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="employeeshift_id">Shift</label>
-          <select
-            name="employeeshift_id"
-            id="employeeshift_id"
-            value={form.employeeshift_id}
-            onChange={handleChange}
-            required
-          >
+        <div style={styles.formGroup}>
+          <label>Shift</label>
+          <select name="employeeshift_id" value={form.employeeshift_id} onChange={handleChange} required style={styles.input}>
             <option value="">Select shift</option>
             {shifts.map((shift) => (
-              <option key={shift.id} value={shift.id}>
-                {shift.name}
-              </option>
+              <option key={shift.id} value={shift.id}>{shift.name}</option>
             ))}
           </select>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="employee_categorie_id">Category</label>
-          <select
-            name="employee_categorie_id"
-            id="employee_categorie_id"
-            value={form.employee_categorie_id}
-            onChange={handleChange}
-            required
-          >
+        <div style={styles.formGroup}>
+          <label>Category</label>
+          <select name="employee_categorie_id" value={form.employee_categorie_id} onChange={handleChange} required style={styles.input}>
             <option value="">Select category</option>
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </select>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="joining_date">Joining Date</label>
-          <input type="date" name="joining_date" id="joining_date" value={form.joining_date} onChange={handleChange} />
+        <div style={styles.formGroup}>
+          <label>Joining Date</label>
+          <input name="joining_date" value={form.joining_date} onChange={handleChange} type="date" required style={styles.input} />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="photo">Photo</label>
-          <input type="file" name="photo" id="photo" onChange={handleChange} />
+        <div style={styles.formGroup}>
+          <label>Photo</label>
+          <input type="file" onChange={handleFileChange} style={styles.input} />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="phone">Phone</label>
-          <input type="number" name="phone" id="phone" value={form.phone} onChange={handleChange} />
+        <div style={styles.formGroup}>
+          <label>Phone</label>
+          <input name="phone" value={form.phone} onChange={handleChange} type="text" required style={styles.input} />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="address">Address</label>
-          <textarea name="address" id="address" value={form.address} onChange={handleChange} />
+        <div style={styles.formGroup}>
+          <label>Address</label>
+          <textarea name="address" value={form.address} onChange={handleChange} style={{ ...styles.input, height: "80px" }} />
         </div>
 
-        <button type="submit" className="btn-submit">
-          Save Employee
-        </button>
+        <button type="submit" style={styles.button}>💾 Save Employee</button>
       </form>
     </div>
   );
 };
 
-export default CreateEmployee;
+const styles = {
+  container: {
+    Width: "1100px",
+    margin: "40px auto",
+    padding: "20px",
+    border: "1px solid #ccc",
+    borderRadius: "8px",
+    backgroundColor: "#f9f9f9",
+    fontFamily: "Arial, sans-serif"
+  },
+  header: {
+    textAlign: "center",
+    marginBottom: "20px"
+  },
+  formGroup: {
+    marginBottom: "15px"
+  },
+  input: {
+    width: "100%",
+    padding: "8px",
+    marginTop: "5px",
+    borderRadius: "4px",
+    border: "1px solid #ccc"
+  },
+  button: {
+    padding: "10px 20px",
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    width: "100%",
+    fontSize: "16px"
+  }
+};
+
+export default AddEmployee;

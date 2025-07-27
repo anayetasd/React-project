@@ -35,7 +35,7 @@ const ManageOrder = () => {
               orders.map((order) => (
                 <tr key={order.id}>
                   <td>{order.id}</td>
-                  <td>{order.customer_id}</td>
+                  <td>{order.customer?.name || order.customer_id}</td>
                   <td>{order.shipping_address}</td>
                   <td>{order.remark}</td>
                   <td>{order.discount}</td>

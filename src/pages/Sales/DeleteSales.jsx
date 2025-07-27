@@ -1,85 +1,103 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const DeleteSale = () => {
+const SaleDeleteConfirm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [sale, setSale] = useState(null);
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
+  const [sale, setSale] = useState({ id: "" });
 
-  // Fetch the sale data
   useEffect(() => {
-    fetch(`${baseUrl}/sales/${id}`)
-      .then((res) => res.json())
-      .then((data) => setSale(data))
-      .catch((err) => console.error("Failed to fetch sale:", err));
-  }, [id]);
+    fetchSale();
+  }, []);
 
-  // Handle delete action
+  const fetchSale = async () => {
+    try {
+      const res = await fetch(`http://anayet.intelsofts.com/project_app/public/api/sales/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch sale data");
+
+      const data = await res.json();
+      console.log("Sale API Response:", data);
+      setSale(data.sale ?? data);
+    } catch (err) {
+      alert(err.message);
+      navigate("/sales");
+    }
+  };
+
+  const goBack = () => {
+    navigate("/sales");
+  };
+
   const handleDelete = async (e) => {
     e.preventDefault();
+
+    if (!window.confirm("Are you sure you want to delete this sale?")) return;
+
     try {
-      await fetch(`${baseUrl}/sales/${id}`, {
+      const res = await fetch(`http://anayet.intelsofts.com/project_app/public/api/sales/${sale.id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to delete sale");
+      }
+
+      alert("Sale deleted successfully!");
       navigate("/sales");
-    } catch (err) {
-      console.error("Delete failed:", err);
+    } catch (error) {
+      alert("Error: " + error.message);
     }
   };
 
   return (
-    <div className="container delete-sale-container">
-      <style>{`
-        .delete-sale-container {
-          max-width: 600px;
-          margin: 50px auto;
-          padding: 40px;
-          background: #fff;
-          border-radius: 12px;
-          box-shadow: 0 0 15px rgba(0,0,0,0.1);
-          text-align: center;
-        }
-        .btn {
-          padding: 10px 20px;
-          font-weight: bold;
-          border-radius: 8px;
-          margin: 10px;
-        }
-        .btn-danger {
-          background-color: #dc3545;
-          color: white;
-          border: none;
-        }
-        .btn-success {
-          background-color: #28a745;
-          color: white;
-          border: none;
-        }
-        h2 {
-          font-size: 28px;
-          margin-top: 30px;
-        }
-      `}</style>
-
-      <Link to="/sales" className="btn btn-success">Back</Link>
-
+    <div style={styles.container}>
+      <button onClick={goBack} style={styles.successBtn} className="mb-3">Back</button>
       <p>Are you sure?</p>
+      <h2 style={styles.idBox}>{sale.id}</h2>
+      
 
-      {sale ? (
-        <h2>Sale ID: {sale.id}</h2>
-      ) : (
-        <p className="text-muted">Loading sale data...</p>
-      )}
-
-      <form onSubmit={handleDelete}>
-        <input className="btn btn-danger" type="submit" value="Confirm Delete" />
+      <form onSubmit={handleDelete} style={{ padding: "20px" }}>
+        <input type="submit" value="Confirm" style={styles.dangerBtn} />
       </form>
     </div>
   );
 };
 
-export default DeleteSale;
+const styles = {
+  container: {
+    maxWidth: "600px",
+    background: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    padding: "20px",
+    margin: "40px auto",
+    textAlign: "center",
+  },
+  successBtn: {
+    backgroundColor: "#28a745",
+    color: "#fff",
+    padding: "10px 20px",
+    fontWeight: "600",
+    borderRadius: "8px",
+    border: "none",
+    cursor: "pointer",
+  },
+  dangerBtn: {
+    backgroundColor: "#dc3545",
+    color: "#fff",
+    padding: "10px 25px",
+    fontWeight: "bold",
+    borderRadius: "8px",
+    border: "none",
+    cursor: "pointer",
+  },
+  idBox: {
+    padding: "16px",
+    fontSize: "24px",
+    fontWeight: "bold",
+  },
+};
+
+export default SaleDeleteConfirm;

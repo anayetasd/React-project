@@ -19,29 +19,51 @@ const EditEmployeeSalary = () => {
   const [payments, setPayments] = useState([]);
 
   useEffect(() => {
-    // Fetch current employee salary
+    // Fetch salary data
     fetch(`${baseUrl}/employeesalarys/${id}`)
       .then((res) => res.json())
       .then((data) => {
+        console.log("Salary data from API:", data);
+        // API থেকে salary key হলো employeesalary, তাই সেটা ধরতে হবে
+        const salaryData = data.employeesalary ?? data;
         setForm({
-          name: data.name,
-          payment_date: data.payment_date,
-          employee_administrator_id: data.employee_administrator_id,
-          payment_method_id: data.payment_method_id,
-          total_amount: data.total_amount,
-          paid_amount: data.paid_amount,
+          name: salaryData.name || "",
+          payment_date: salaryData.payment_date || "",
+          employee_administrator_id: salaryData.employee_administrator_id || "",
+          payment_method_id: salaryData.payment_method_id || "",
+          total_amount: salaryData.total_amount || "",
+          paid_amount: salaryData.paid_amount || "",
         });
+      })
+      .catch((err) => {
+        console.error("Error fetching salary:", err);
+        alert("Error loading salary data.");
       });
 
-    // Fetch administrators
-    fetch(`${baseUrl}/employeeadministrators`)
-      .then((res) => res.json())
-      .then((data) => setAdministrators(data));
+    // Fetch administrators — API URL ঠিক করো
+    fetch(`${baseUrl}/administrators`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch administrators");
+        return res.json();
+      })
+      .then((data) => {
+        setAdministrators(data.data || data || []);
+      })
+      .catch((err) => {
+        console.error("Error loading administrators:", err);
+        setAdministrators([]); // খারাপ হলে খালি রাখবে
+      });
 
     // Fetch payment methods
     fetch(`${baseUrl}/paymentmethods`)
       .then((res) => res.json())
-      .then((data) => setPayments(data));
+      .then((data) => {
+        setPayments(data.data || data || []);
+      })
+      .catch((err) => {
+        console.error("Error loading payment methods:", err);
+        setPayments([]);
+      });
   }, [id]);
 
   const handleChange = (e) => {
@@ -61,12 +83,16 @@ const EditEmployeeSalary = () => {
     })
       .then((res) => {
         if (res.ok) {
+          alert("✅ Salary updated successfully!");
           navigate("/employeesalarys");
         } else {
-          alert("Failed to update.");
+          alert("❌ Failed to update salary.");
         }
       })
-      .catch((err) => console.error("Update error:", err));
+      .catch((err) => {
+        console.error("Update error:", err);
+        alert("❌ Error occurred during update.");
+      });
   };
 
   return (
@@ -186,7 +212,7 @@ const EditEmployeeSalary = () => {
             <option value="">-- Select Administrator --</option>
             {administrators.map((admin) => (
               <option key={admin.id} value={admin.id}>
-                {admin.role}
+                {admin.role || admin.name}
               </option>
             ))}
           </select>
@@ -213,7 +239,7 @@ const EditEmployeeSalary = () => {
         <div className="form-group">
           <label htmlFor="total_amount">Total Amount</label>
           <input
-            type="text"
+            type="number"
             id="total_amount"
             name="total_amount"
             value={form.total_amount}
@@ -224,7 +250,7 @@ const EditEmployeeSalary = () => {
         <div className="form-group">
           <label htmlFor="paid_amount">Paid Amount</label>
           <input
-            type="text"
+            type="number"
             id="paid_amount"
             name="paid_amount"
             value={form.paid_amount}

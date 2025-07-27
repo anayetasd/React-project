@@ -8,7 +8,7 @@ const ManageCustomer = () => {
     try {
       const res = await fetch("http://anayet.intelsofts.com/project_app/public/api/customers");
       const data = await res.json();
-      setCustomers(data.customers);
+      setCustomers(data.customers || []); // fallback to empty array
     } catch (error) {
       console.error("Failed to fetch customers", error);
     }
@@ -17,6 +17,8 @@ const ManageCustomer = () => {
   useEffect(() => {
     fetchCustomers();
   }, []);
+
+  const imageBaseUrl = "http://anayet.intelsofts.com/project_app/public/uploads/customers/";
 
   return (
     <div className="container mt-4">
@@ -49,8 +51,8 @@ const ManageCustomer = () => {
                   <td>
                     {customer.photo ? (
                       <img
-                        src={`http://localhost/laravel12/project_app/public/img/${customer.photo}`}
-                        alt="Customer"
+                        src={`${imageBaseUrl}${customer.photo}`}
+                        alt={customer.name}
                         style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "50%" }}
                       />
                     ) : (

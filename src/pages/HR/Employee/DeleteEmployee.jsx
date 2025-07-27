@@ -1,48 +1,64 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 
-const DeleteEmployee = () => {
+const EmployeeDeleteConfirm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const baseUrl = "http://anayet.intelsofts.com/project_app/public/api";
 
   const [employee, setEmployee] = useState(null);
 
   useEffect(() => {
-    fetch(`${baseUrl}/employees/${id}`)
-      .then((res) => res.json())
-      .then((data) => setEmployee(data))
-      .catch((err) => console.error("Error fetching employee:", err));
+    fetch(`http://anayet.intelsofts.com/project_app/public/api/employees/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load employee');
+        return res.json();
+      })
+      .then((data) => {
+        setEmployee(data.employee ?? data);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert('Failed to fetch employee data.');
+      });
   }, [id]);
 
-  const handleDelete = async (e) => {
+  const deleteEmployee = async (e) => {
     e.preventDefault();
-
-    const confirmed = window.confirm("Are you sure you want to delete?");
-    if (!confirmed) return;
-
     try {
-      const response = await fetch(`${baseUrl}/employees/${id}`, {
-        method: "DELETE",
+      const res = await fetch(`http://anayet.intelsofts.com/project_app/public/api/employees/${id}`, {
+        method: 'DELETE',
         headers: {
-          Accept: "application/json",
+          'Accept': 'application/json',
         },
       });
-
-      if (response.ok) {
-        alert("Employee deleted successfully.");
-        navigate("/employees");
-      } else {
-        alert("Failed to delete employee.");
-      }
-    } catch (error) {
-      console.error("Delete failed:", error);
-      alert("Error occurred during deletion.");
+      if (!res.ok) throw new Error('Failed to delete employee');
+      alert('Employee deleted successfully');
+      navigate('/employees');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete employee.');
     }
   };
 
   return (
-    <div className="confirm-container">
+    <>
+      {employee && (
+        <div className="confirm-container">
+          <h2>Confirm Deletion</h2>
+          <p>
+            Are you sure you want to delete Raw Material ID: <strong>{employee.id}</strong>?
+          </p>
+          <h4>Employee Name: {employee.name}</h4>
+          <h4>Address: {employee.address}</h4>
+
+          <form onSubmit={deleteEmployee}>
+            <input className="btn-confirm" type="submit" value="Yes, Delete It" />
+          </form>
+
+          <Link to="/employees" className="btn-back">← Back</Link>
+        </div>
+      )}
+
       <style>{`
         .confirm-container {
           max-width: 500px;
@@ -96,30 +112,8 @@ const DeleteEmployee = () => {
           background-color: #218838;
         }
       `}</style>
-
-      <h2>Confirm Deletion</h2>
-      {employee ? (
-        <>
-          <p>
-            Are you sure you want to delete Employee ID:{" "}
-            <strong>{employee.id}</strong>?
-          </p>
-          <h4>Employee Name: {employee.name}</h4>
-          <h4>Address: {employee.address}</h4>
-
-          <form onSubmit={handleDelete}>
-            <input className="btn-confirm" type="submit" value="Yes, Delete It" />
-          </form>
-
-          <Link className="btn-back" to="/employees">
-            ← Back
-          </Link>
-        </>
-      ) : (
-        <p>Loading employee details...</p>
-      )}
-    </div>
+    </>
   );
 };
 
-export default DeleteEmployee;
+export default EmployeeDeleteConfirm;
